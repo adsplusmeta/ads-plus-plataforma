@@ -37,6 +37,36 @@ input,select{color-scheme:dark}
 .srch-card{animation:scaleIn .18s cubic-bezier(0.34,1.56,0.64,1) both}
 button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid rgba(0,180,216,.5);outline-offset:2px}
 .notif-item:hover{background:rgba(0,180,216,.05)!important}
+
+/* ── Responsive grid helpers ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.chart-grid{display:grid;grid-template-columns:1.65fr 1fr;gap:14px}
+.mobile-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:40;backdrop-filter:blur(2px)}
+.sidebar-drawer{transition:transform 0.3s cubic-bezier(0.4,0,0.2,1)!important}
+.hamburger{display:none;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;background:rgba(30,45,61,.5);border:1px solid var(--border);cursor:pointer;color:var(--t2);flex-shrink:0}
+.topbar-search{display:flex}
+.dash-padding{padding:24px}
+
+@media(max-width:1024px){
+  .kpi-grid{grid-template-columns:repeat(2,1fr)}
+  .chart-grid{grid-template-columns:1fr}
+}
+@media(max-width:640px){
+  .kpi-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .chart-grid{grid-template-columns:1fr}
+  .topbar-search{display:none!important}
+  .hamburger{display:flex}
+  .mobile-overlay{display:block}
+  .dash-padding{padding:14px}
+  .toast{top:auto;bottom:20px;right:12px;left:12px;max-width:none}
+  .btn-grad{padding:7px 12px;font-size:12px}
+}
+@media(max-width:400px){
+  .kpi-grid{grid-template-columns:1fr}
+}
+@media(max-width:768px){
+  .settings-grid{grid-template-columns:1fr!important}
+}
 </style>
 </head>
 <body>

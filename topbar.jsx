@@ -1,5 +1,5 @@
 // topbar.jsx
-const TopBar = ({ activeView, onNewCampaign }) => {
+const TopBar = ({ activeView, onNewCampaign, isMobile, onMenuToggle }) => {
   const [notifOpen, setNotifOpen]   = React.useState(false);
   const [profileOpen, setProfileOpen] = React.useState(false);
 
@@ -29,19 +29,26 @@ const TopBar = ({ activeView, onNewCampaign }) => {
       justifyContent:'space-between',
       padding:'0 20px', gap:12,
     }}>
-      {/* Breadcrumb */}
-      <div style={{ display:'flex', alignItems:'center', gap:6, fontSize:13 }}>
-        <span style={{ color:'var(--text-2)' }}>Cuenta principal</span>
-        <Icon name="chevronRight" size={13} color="var(--text-2)" />
-        <span style={{ color:'var(--text-1)', fontWeight:600, fontFamily:'var(--font-d)' }}>{labels[activeView]}</span>
+      {/* Left: hamburger (mobile) + breadcrumb */}
+      <div style={{ display:'flex', alignItems:'center', gap:8, minWidth:0 }}>
+        {isMobile && (
+          <button className="hamburger" onClick={onMenuToggle}
+            style={{ display:'flex', alignItems:'center', justifyContent:'center', width:36, height:36, borderRadius:8, background:'rgba(30,45,61,0.5)', border:'1px solid var(--border)', cursor:'pointer', color:'var(--text-2)', flexShrink:0 }}>
+            <Icon name="list" size={18} color="var(--text-2)"/>
+          </button>
+        )}
+        <div style={{ display:'flex', alignItems:'center', gap:6, fontSize:13, minWidth:0 }}>
+          {!isMobile && <><span style={{ color:'var(--text-2)', whiteSpace:'nowrap' }}>Cuenta principal</span><Icon name="chevR" size={13} color="var(--text-2)"/></>}
+          <span style={{ color:'var(--text-1)', fontWeight:600, fontFamily:'var(--font-d)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{labels[activeView]}</span>
+        </div>
       </div>
 
       {/* Right */}
       <div style={{ display:'flex', alignItems:'center', gap:8 }}>
 
-        {/* Search pill */}
-        <div style={{
-          display:'flex', alignItems:'center', gap:8,
+        {/* Search pill — hidden on mobile via CSS */}
+        <div className="topbar-search" style={{
+          alignItems:'center', gap:8,
           background:'rgba(30,45,61,0.5)',
           border:'1px solid var(--border)',
           borderRadius:8, padding:'6px 12px',

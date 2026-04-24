@@ -151,9 +151,10 @@ const SettingsView = () => {
   };
 
   return (
-    <div style={{ padding:24, overflowY:'auto', height:'100%', display:'flex', flexDirection:'column', gap:20 }}>
+    <div className="dash-padding" style={{ overflowY:'auto', height:'100%', display:'flex', flexDirection:'column', gap:20 }}>
       <h1 className="fade-up" style={{ fontFamily:'var(--font-d)', fontSize:28, fontWeight:800, color:'var(--text-1)' }}>Configuración</h1>
-      <div style={{ display:'grid', gridTemplateColumns:'220px 1fr', gap:18 }}>
+      <div style={{ display:'grid', gridTemplateColumns:'clamp(160px,220px,220px) 1fr', gap:18 }}
+        className="settings-grid">
         {/* Sub nav */}
         <div style={{ display:'flex', flexDirection:'column', gap:2 }}>
           {sections.map(s=>(

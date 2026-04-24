@@ -157,7 +157,7 @@ const DashboardView = ({ onNewCampaign, showToast }) => {
   );
 
   return (
-    <div style={{ padding:24, overflowY:'auto', height:'100%', display:'flex', flexDirection:'column', gap:20 }}>
+    <div className="dash-padding" style={{ overflowY:'auto', height:'100%', display:'flex', flexDirection:'column', gap:20 }}>
       {/* Header */}
       <div className="fade-up" style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', flexWrap:'wrap', gap:12 }}>
         <div>
@@ -195,12 +195,12 @@ const DashboardView = ({ onNewCampaign, showToast }) => {
       </div>
 
       {/* KPIs */}
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:14 }}>
+      <div className="kpi-grid">
         {KPI_DATA.map((k,i) => <KPICard key={k.label} kpi={k} delay={i*70}/>)}
       </div>
 
       {/* Charts */}
-      <div style={{ display:'grid', gridTemplateColumns:'1.65fr 1fr', gap:14 }}>
+      <div className="chart-grid">
         <div className="card" style={{ padding:20 }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16 }}>
             <div>
@@ -232,7 +232,7 @@ const DashboardView = ({ onNewCampaign, showToast }) => {
 
       {/* Table */}
       <div className="card" style={{ overflow:'hidden' }}>
-        <div style={{ padding:'14px 18px', borderBottom:'1px solid var(--border)', display:'flex', justifyContent:'space-between', alignItems:'center', gap:10, flexWrap:'wrap' }}>
+        <div style={{ padding:'12px 14px', borderBottom:'1px solid var(--border)', display:'flex', justifyContent:'space-between', alignItems:'center', gap:10, flexWrap:'wrap' }}>
           <div style={{ fontFamily:'var(--font-d)', fontSize:15, fontWeight:700 }}>Campañas Activas</div>
           <div style={{ display:'flex', gap:8 }}>
             <div style={{ position:'relative' }}>

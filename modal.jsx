@@ -122,8 +122,9 @@ const NewCampaignModal = ({ open, onClose, onCreated }) => {
       <div style={{
         background:'#111827',
         border:'1px solid rgba(0,180,216,0.15)',
-        borderRadius:16, padding:28,
+        borderRadius:16, padding:'22px 20px',
         width:'100%', maxWidth:480, position:'relative',
+        maxHeight:'90vh', overflowY:'auto',
         boxShadow:'0 24px 64px rgba(0,0,0,0.7), 0 0 40px rgba(0,180,216,0.06)',
         animation:'fadeUp 0.25s ease-out',
       }}>

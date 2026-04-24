@@ -8,27 +8,36 @@ const NAV_ITEMS = [
   { id:'settings',  label:'Configuración',   icon:'settings'  },
 ];
 
-const Sidebar = ({ activeView, setActiveView, collapsed, setCollapsed }) => {
+const Sidebar = ({ activeView, setActiveView, collapsed, setCollapsed, isMobile, mobileOpen, setMobileOpen }) => {
   const [hovered, setHovered] = React.useState(null);
 
   const W = collapsed ? 72 : 260;
 
+  const mobileStyle = isMobile ? {
+    position: 'fixed', top: 0, left: 0, bottom: 0, zIndex: 50,
+    width: 260, minWidth: 260,
+    transform: mobileOpen ? 'translateX(0)' : 'translateX(-100%)',
+    transition: 'transform 0.3s cubic-bezier(0.4,0,0.2,1)',
+    boxShadow: mobileOpen ? '4px 0 32px rgba(0,0,0,0.7)' : 'none',
+  } : {};
+
   return (
-    <div style={{
-      width: W, minWidth: W,
+    <div className="sidebar-drawer" style={{
+      width: isMobile ? 0 : W, minWidth: isMobile ? 0 : W,
       background: 'var(--bg-sidebar)',
-      borderRight: '1px solid var(--border)',
+      borderRight: isMobile ? 'none' : '1px solid var(--border)',
       display: 'flex', flexDirection: 'column',
       transition: 'width 0.3s cubic-bezier(0.4,0,0.2,1), min-width 0.3s cubic-bezier(0.4,0,0.2,1)',
-      overflow: 'hidden', flexShrink: 0,
+      overflow: isMobile ? 'visible' : 'hidden', flexShrink: 0,
       position: 'relative', zIndex: 10,
+      ...mobileStyle,
     }}>
 
       {/* Logo */}
       <div style={{
         height: 60, display: 'flex', alignItems: 'center',
-        padding: collapsed ? '0 20px' : '0 20px',
-        justifyContent: collapsed ? 'center' : 'flex-start',
+        padding: '0 20px',
+        justifyContent: (!isMobile && collapsed) ? 'center' : 'flex-start',
         gap: 10, borderBottom: '1px solid var(--border)', flexShrink: 0,
       }}>
         <div style={{
@@ -46,7 +55,7 @@ const Sidebar = ({ activeView, setActiveView, collapsed, setCollapsed }) => {
             <circle cx="340" cy="305" r="32" fill="white"/>
           </svg>
         </div>
-        {!collapsed && (
+        {(isMobile || !collapsed) && (
           <span style={{ fontFamily:'var(--font-d)', fontWeight:800, fontSize:'0.95rem', letterSpacing:'0.12em', whiteSpace:'nowrap', color:'var(--text-1)' }}>
             ADS <span style={{ color:'var(--accent)' }}>PLUS</span>
           </span>
@@ -54,7 +63,7 @@ const Sidebar = ({ activeView, setActiveView, collapsed, setCollapsed }) => {
       </div>
 
       {/* User */}
-      {!collapsed && (
+      {(isMobile || !collapsed) && (
         <div style={{
           padding: '10px 16px', display:'flex', alignItems:'center', gap:10,
           borderBottom: '1px solid var(--border)', flexShrink:0,
@@ -82,11 +91,11 @@ const Sidebar = ({ activeView, setActiveView, collapsed, setCollapsed }) => {
               onClick={() => setActiveView(item.id)}
               onMouseEnter={() => setHovered(item.id)}
               onMouseLeave={() => setHovered(null)}
-              title={collapsed ? item.label : ''}
+              title={(!isMobile && collapsed) ? item.label : ''}
               style={{
                 display:'flex', alignItems:'center', gap:10,
-                padding: collapsed ? '10px 0' : '9px 12px',
-                justifyContent: collapsed ? 'center' : 'flex-start',
+                padding: (!isMobile && collapsed) ? '10px 0' : '9px 12px',
+                justifyContent: (!isMobile && collapsed) ? 'center' : 'flex-start',
                 borderRadius: 8, cursor:'pointer',
                 background: isActive ? 'rgba(0,180,216,0.12)' : isHov ? 'rgba(0,180,216,0.06)' : 'transparent',
                 borderLeft: isActive ? '2px solid var(--accent)' : '2px solid transparent',
@@ -95,7 +104,7 @@ const Sidebar = ({ activeView, setActiveView, collapsed, setCollapsed }) => {
               }}
             >
               <Icon name={item.icon} size={17} color={isActive ? 'var(--accent)' : isHov ? 'var(--text-1)' : 'var(--text-2)'} />
-              {!collapsed && (
+              {(isMobile || !collapsed) && (
                 <span style={{ fontSize:13.5, fontWeight: isActive ? 600 : 400, whiteSpace:'nowrap' }}>
                   {item.label}
                 </span>
@@ -107,10 +116,10 @@ const Sidebar = ({ activeView, setActiveView, collapsed, setCollapsed }) => {
 
       {/* Status */}
       <div style={{
-        padding: collapsed ? '14px 0' : '12px 16px',
+        padding: (!isMobile && collapsed) ? '14px 0' : '12px 16px',
         borderTop:'1px solid var(--border)', flexShrink:0,
         display:'flex', alignItems:'center', gap:8,
-        justifyContent: collapsed ? 'center' : 'flex-start',
+        justifyContent: (!isMobile && collapsed) ? 'center' : 'flex-start',
       }}>
         <div style={{
           width:7, height:7, borderRadius:'50%',
@@ -118,25 +127,27 @@ const Sidebar = ({ activeView, setActiveView, collapsed, setCollapsed }) => {
           boxShadow:'0 0 6px rgba(57,211,83,0.7)',
           animation:'dotPulse 2.5s ease infinite', flexShrink:0,
         }}></div>
-        {!collapsed && <span style={{ fontSize:11, color:'var(--text-2)', fontWeight:500 }}>Sistema Activo</span>}
+        {(isMobile || !collapsed) && <span style={{ fontSize:11, color:'var(--text-2)', fontWeight:500 }}>Sistema Activo</span>}
       </div>
 
-      {/* Toggle */}
-      <button onClick={() => setCollapsed(!collapsed)} style={{
-        position:'absolute', top:'50%', right:-14,
-        transform:'translateY(-50%)',
-        width:28, height:28, borderRadius:'50%',
-        background:'var(--bg-card)', border:'1px solid var(--border)',
-        display:'flex', alignItems:'center', justifyContent:'center',
-        cursor:'pointer', color:'var(--text-2)', zIndex:20,
-        boxShadow:'0 2px 8px rgba(0,0,0,0.4)',
-        transition:'background 0.15s',
-      }}
-        onMouseEnter={e => { e.currentTarget.style.background='#1E2D3D'; e.currentTarget.style.color='var(--text-1)'; }}
-        onMouseLeave={e => { e.currentTarget.style.background='var(--bg-card)'; e.currentTarget.style.color='var(--text-2)'; }}
-      >
-        <Icon name={collapsed ? 'chevR' : 'chevL'} size={13} />
-      </button>
+      {/* Toggle — hide on mobile */}
+      {!isMobile && (
+        <button onClick={() => setCollapsed(!collapsed)} style={{
+          position:'absolute', top:'50%', right:-14,
+          transform:'translateY(-50%)',
+          width:28, height:28, borderRadius:'50%',
+          background:'var(--bg-card)', border:'1px solid var(--border)',
+          display:'flex', alignItems:'center', justifyContent:'center',
+          cursor:'pointer', color:'var(--text-2)', zIndex:20,
+          boxShadow:'0 2px 8px rgba(0,0,0,0.4)',
+          transition:'background 0.15s',
+        }}
+          onMouseEnter={e => { e.currentTarget.style.background='#1E2D3D'; e.currentTarget.style.color='var(--text-1)'; }}
+          onMouseLeave={e => { e.currentTarget.style.background='var(--bg-card)'; e.currentTarget.style.color='var(--text-2)'; }}
+        >
+          <Icon name={collapsed ? 'chevR' : 'chevL'} size={13} />
+        </button>
+      )}
     </div>
   );
 };

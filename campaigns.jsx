@@ -110,7 +110,7 @@ const CampaignsView = ({ onNewCampaign }) => {
     .filter(c => !search || c.name.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <div style={{ padding:24, overflowY:'auto', height:'100%', display:'flex', flexDirection:'column', gap:20 }}>
+    <div className="dash-padding" style={{ overflowY:'auto', height:'100%', display:'flex', flexDirection:'column', gap:20 }}>
       {/* Header */}
       <div className="fade-up" style={{ display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:12 }}>
         <h1 style={{ fontFamily:'var(--font-d)', fontSize:28, fontWeight:800, color:'var(--text-1)' }}>Campañas</h1>
@@ -152,7 +152,7 @@ const CampaignsView = ({ onNewCampaign }) => {
 
       {/* Grid / Table */}
       {viewMode==='cards' ? (
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:14 }}>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(260px,1fr))', gap:14 }}>
           {filtered.map((c,i) => <CampaignCard key={c.id} c={c} delay={i*55}/>)}
           {filtered.length===0 && <EmptyState/>}
         </div>

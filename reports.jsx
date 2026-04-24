@@ -13,7 +13,7 @@ const ReportsView = () => {
   const totals = CAMPAIGNS_DATA.reduce((a,c)=>({ investment:a.investment+c.investment, results:a.results+c.results }),{investment:0,results:0});
 
   return (
-    <div style={{ padding:24, overflowY:'auto', height:'100%', display:'flex', flexDirection:'column', gap:20 }}>
+    <div className="dash-padding" style={{ overflowY:'auto', height:'100%', display:'flex', flexDirection:'column', gap:20 }}>
       {/* Header */}
       <div className="fade-up" style={{ display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:12 }}>
         <h1 style={{ fontFamily:'var(--font-d)', fontSize:28, fontWeight:800, color:'var(--text-1)' }}>Reportes</h1>

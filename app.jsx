@@ -23,15 +23,37 @@ const Toast = ({ message, onDismiss }) => {
   );
 };
 
+const useBreakpoint = () => {
+  const [w, setW] = React.useState(window.innerWidth);
+  React.useEffect(() => {
+    const handler = () => setW(window.innerWidth);
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
+  return { isMobile: w < 640, isTablet: w >= 640 && w < 1024, isDesktop: w >= 1024, width: w };
+};
+
 const App = () => {
-  const [view,      setView]      = React.useState('dashboard');
-  const [collapsed, setCollapsed] = React.useState(false);
-  const [modal,     setModal]     = React.useState(false);
-  const [toast,     setToast]     = React.useState(null);
+  const [view,        setView]        = React.useState('dashboard');
+  const [collapsed,   setCollapsed]   = React.useState(false);
+  const [modal,       setModal]       = React.useState(false);
+  const [toast,       setToast]       = React.useState(null);
+  const [mobileOpen,  setMobileOpen]  = React.useState(false);
+  const { isMobile, isTablet }        = useBreakpoint();
+
+  React.useEffect(() => {
+    if (isTablet && !isMobile) setCollapsed(true);
+    if (!isMobile && !isTablet) setCollapsed(false);
+  }, [isMobile, isTablet]);
 
   const showToast = msg => {
     setToast(msg);
     setTimeout(() => setToast(null), 4500);
+  };
+
+  const handleNav = v => {
+    setView(v);
+    if (isMobile) setMobileOpen(false);
   };
 
   const renderView = () => {
@@ -48,15 +70,28 @@ const App = () => {
 
   return (
     <div style={{ display:'flex', height:'100vh', overflow:'hidden', background:'var(--bg-main)' }}>
+      {/* Mobile overlay backdrop */}
+      {isMobile && mobileOpen && (
+        <div className="mobile-overlay" onClick={() => setMobileOpen(false)} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.55)', zIndex:40, backdropFilter:'blur(2px)' }}/>
+      )}
+
       <Sidebar
         activeView={view}
-        setActiveView={v => setView(v)}
-        collapsed={collapsed}
+        setActiveView={handleNav}
+        collapsed={isMobile ? false : collapsed}
         setCollapsed={setCollapsed}
+        isMobile={isMobile}
+        mobileOpen={mobileOpen}
+        setMobileOpen={setMobileOpen}
       />
 
       <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden', minWidth:0 }}>
-        <TopBar activeView={view} onNewCampaign={()=>setModal(true)}/>
+        <TopBar
+          activeView={view}
+          onNewCampaign={()=>setModal(true)}
+          isMobile={isMobile}
+          onMenuToggle={() => setMobileOpen(o => !o)}
+        />
         <div style={{ flex:1, overflow:'hidden' }}>
           {renderView()}
         </div>
