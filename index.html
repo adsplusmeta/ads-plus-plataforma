@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADS PLUS — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg-main:#0D1117;--bg-side:#0A0F16;--bg-card:#111827;
+  --border:#1E2D3D;--accent:#00B4D8;--accent2:#0077B6;
+  --adim:rgba(0,180,216,0.08);--agl:rgba(0,180,216,0.15);
+  --t1:#F0F6FC;--t2:#8B949E;
+  --ok:#39D353;--err:#F85149;--warn:#E3B341;
+  --fd:'Syne',sans-serif;--fm:'JetBrains Mono',monospace;--fu:'Inter',sans-serif;
+}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg-main);color:var(--t1);font-family:var(--fu);-webkit-font-smoothing:antialiased}
+#root{height:100vh;display:flex;overflow:hidden}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#1E2D3D;border-radius:2px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes toastIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes dotPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+.fade-up{animation:fadeUp .22s ease-out both}
+.d1{animation-delay:.04s}.d2{animation-delay:.08s}.d3{animation-delay:.12s}.d4{animation-delay:.16s}
+input,select{color-scheme:dark}
+.btn-grad{background:linear-gradient(135deg,#00B4D8,#0077B6);border:none;border-radius:8px;color:#fff;cursor:pointer;font-family:var(--fu);font-weight:600;font-size:13px;display:inline-flex;align-items:center;gap:6px;padding:8px 16px;transition:all .15s ease}
+.btn-grad:hover{box-shadow:0 0 20px rgba(0,180,216,.35);transform:translateY(-1px)}
+.card{background:rgba(17,24,39,.85);border:1px solid rgba(0,180,216,.1);border-radius:12px;backdrop-filter:blur(8px)}
+.toast{position:fixed;top:20px;right:20px;z-index:9999;background:var(--bg-card);border:1px solid rgba(0,180,216,.25);border-radius:10px;padding:13px 18px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--t1);box-shadow:0 8px 32px rgba(0,0,0,.5);animation:toastIn .3s ease-out both;max-width:300px}
+@keyframes scaleIn{from{opacity:0;transform:scale(.96) translateY(-8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.srch-card{animation:scaleIn .18s cubic-bezier(0.34,1.56,0.64,1) both}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid rgba(0,180,216,.5);outline-offset:2px}
+.notif-item:hover{background:rgba(0,180,216,.05)!important}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+// ═══════════════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════════════
+const CAMPAIGNS = [
+  {id:1,name:'Black Friday Q2', status:'active', investment:18400,results:294,cpr:62.60,trend:[30,45,40,60,55,70,85],tdir:'up',  platform:'Meta',start:'2024-04-01',budget:25000,obj:'Conversiones'},
+  {id:2,name:'Retargeting IG',  status:'active', investment:9820, results:187,cpr:52.50,trend:[20,35,45,40,55,60,75],tdir:'up',  platform:'Meta',start:'2024-04-05',budget:15000,obj:'Tráfico'},
+  {id:3,name:'Awareness Mayo',  status:'review', investment:12100,results:142,cpr:85.20,trend:[60,50,45,40,35,30,28],tdir:'down',platform:'Meta',start:'2024-05-01',budget:20000,obj:'Alcance'},
+  {id:4,name:'Lead Gen Pro',    status:'paused', investment:5200, results:98, cpr:53.06,trend:[40,42,41,40,40,41,40],tdir:'flat',platform:'Meta',start:'2024-03-15',budget:10000,obj:'Conversiones'},
+  {id:5,name:'Video Views Q2',  status:'active', investment:2800, results:102,cpr:27.45,trend:[15,25,30,40,45,55,65],tdir:'up',  platform:'Meta',start:'2024-04-20',budget:8000, obj:'Alcance'},
+  {id:6,name:'Stories Summer',  status:'active', investment:4100, results:211,cpr:19.43,trend:[10,18,28,35,50,60,72],tdir:'up',  platform:'Meta',start:'2024-05-10',budget:8000, obj:'Engagement'},
+  {id:7,name:'Catalog Retarget',status:'paused', investment:3300, results:67, cpr:49.25,trend:[50,45,40,38,36,35,34],tdir:'down',platform:'Meta',start:'2024-03-20',budget:6000, obj:'Ventas'},
+];
+const DAILY = [
+  {date:'Abr 9',value:1200},{date:'Abr 10',value:1650},{date:'Abr 11',value:1420},{date:'Abr 12',value:2180},
+  {date:'Abr 13',value:1900},{date:'Abr 14',value:1720},{date:'Abr 15',value:2300},{date:'Abr 16',value:2480},
+  {date:'Abr 17',value:1960},{date:'Abr 18',value:2820},{date:'Abr 19',value:2220},{date:'Abr 20',value:2600},
+  {date:'Abr 21',value:2940},{date:'Abr 22',value:3180},
+];
+const DONUT = [{name:'Conversiones',value:60,color:'#00B4D8'},{name:'Tráfico',value:25,color:'#0077B6'},{name:'Alcance',value:15,color:'#023E8A'}];
+const KPIS  = [
+  {label:'Inversión Total',  value:'$48,320',change:'+12.4%',dir:'up',  icon:'dollar',spark:[30,45,35,60,55,75,80]},
+  {label:'Alcance',          value:'183K',   change:'+8.1%', dir:'up',  icon:'users', spark:[40,55,50,65,70,75,85]},
+  {label:'CTR Promedio',     value:'3.84%',  change:'+0.6 pts',dir:'up',icon:'click', spark:[2.8,3.1,2.9,3.4,3.6,3.7,3.84]},
+  {label:'Costo/Resultado',  value:'$62.40', change:'+$4.20',dir:'down',icon:'cost',  spark:[55,58,54,60,61,60,62.4]},
+];
+const RPT_DATA  = [{date:'Sem 1',investment:8200,results:112},{date:'Sem 2',investment:11400,results:156},{date:'Sem 3',investment:13800,results:178},{date:'Sem 4',investment:14920,results:177}];
+const CMP_DATA  = [{name:'Black Friday',investment:18400,results:294},{name:'Retargeting',investment:9820,results:187},{name:'Awareness',investment:12100,results:142},{name:'Lead Gen',investment:5200,results:98},{name:'Video',investment:2800,results:102}];
+
+// ═══════════════════════════════════════════════
+//  ICONS
+// ═══════════════════════════════════════════════
+const Ic = ({ n, s=18, c='currentColor', sw=1.6 }) => {
+  const p = {fill:'none',stroke:c,strokeWidth:sw,strokeLinecap:'round',strokeLinejoin:'round',viewBox:'0 0 24 24',style:{width:s,height:s,flexShrink:0,display:'block'}};
+  const m = {
+    dashboard:   <svg {...p}><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>,
+    campaigns:   <svg {...p}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
+    adsets:      <svg {...p}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2" fill={c} stroke="none"/></svg>,
+    ads:         <svg {...p}><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>,
+    reports:     <svg {...p}><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
+    settings:    <svg {...p}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>,
+    chevR:       <svg {...p}><polyline points="9 18 15 12 9 6"/></svg>,
+    chevL:       <svg {...p}><polyline points="15 18 9 12 15 6"/></svg>,
+    chevD:       <svg {...p}><polyline points="6 9 12 15 18 9"/></svg>,
+    chevU:       <svg {...p}><polyline points="18 15 12 9 6 15"/></svg>,
+    plus:        <svg {...p}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+    bell:        <svg {...p}><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>,
+    search:      <svg {...p}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
+    dollar:      <svg {...p}><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>,
+    users:       <svg {...p}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+    click:       <svg {...p}><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>,
+    cost:        <svg {...p}><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>,
+    arrowUp:     <svg {...p}><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>,
+    arrowDown:   <svg {...p}><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>,
+    edit:        <svg {...p}><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
+    pause:       <svg {...p}><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>,
+    play:        <svg {...p}><polygon points="5 3 19 12 5 21 5 3"/></svg>,
+    x:           <svg {...p}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+    check:       <svg {...p}><polyline points="20 6 9 17 4 12"/></svg>,
+    grid:        <svg {...p}><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>,
+    list:        <svg {...p}><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>,
+    filter:      <svg {...p}><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>,
+    download:    <svg {...p}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>,
+    calendar:    <svg {...p}><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
+    eye:         <svg {...p}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>,
+    link:        <svg {...p}><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>,
+    creditCard:  <svg {...p}><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>,
+    user:        <svg {...p}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+  };
+  return m[n] || <svg {...p}><circle cx="12" cy="12" r="10"/></svg>;
+};
+
+// ═══════════════════════════════════════════════
+//  CHARTS (custom SVG — no external deps)
+// ═══════════════════════════════════════════════
+
+/* ── Sparkline ── */
+const Spark = ({ data, color='#00B4D8', w=80, h=32 }) => {
+  if (!data || data.length < 2) return null;
+  const mx=Math.max(...data), mn=Math.min(...data), rng=(mx-mn)||1;
+  const pts = data.map((v,i)=>`${(i/(data.length-1))*w},${h-((v-mn)/rng)*h}`).join(' ');
+  const uid = color.replace(/[^a-z0-9]/gi,'');
+  return (
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} style={{display:'block',overflow:'visible'}}>
+      <defs><linearGradient id={`sg${uid}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={color} stopOpacity=".3"/><stop offset="100%" stopColor={color} stopOpacity="0"/></linearGradient></defs>
+      <polygon points={`0,${h} ${pts} ${w},${h}`} fill={`url(#sg${uid})`}/>
+      <polyline points={pts} fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+};
+
+/* ── Bar chart ── */
+const InvChart = ({ data, type='bar' }) => {
+  const W=560, H=190, PL=44, PB=28, PT=10, PR=8;
+  const cW=W-PL-PR, cH=H-PB-PT;
+  const vals = data.map(d=>d.value);
+  const mx=Math.max(...vals), mn=0;
+  const avg = vals.reduce((s,v)=>s+v,0)/vals.length;
+  const bW = Math.floor(cW/data.length*0.6);
+  const x = (i) => PL + (i/(data.length-1||1))*cW;
+  const y = (v)  => PT + cH - ((v-mn)/(mx-mn||1))*cH;
+  const [tip, setTip] = React.useState(null);
+  const yTicks = [0, mx*0.25, mx*0.5, mx*0.75, mx].map(v=>Math.round(v));
+
+  if (type==='bar') return (
+    <svg viewBox={`0 0 ${W} ${H}`} style={{width:'100%',height:H,display:'block'}}>
+      <defs>
+        <linearGradient id="bGr" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#00B4D8"/><stop offset="100%" stopColor="#0077B6"/></linearGradient>
+        <linearGradient id="bGrH" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#38c8e8"/><stop offset="100%" stopColor="#0099d8"/></linearGradient>
+      </defs>
+      {yTicks.map((v,i)=>{
+        const cy = PT + cH - (v/(mx||1))*cH;
+        return <g key={i}><line x1={PL} y1={cy} x2={W-PR} y2={cy} stroke="rgba(30,45,61,.7)" strokeWidth="1" strokeDasharray="3 3"/><text x={PL-4} y={cy+4} textAnchor="end" fontSize="9" fill="#8B949E" fontFamily="JetBrains Mono">${v>=1000?`${(v/1000).toFixed(0)}k`:v}</text></g>;
+      })}
+      {/* avg line */}
+      <line x1={PL} y1={y(avg)} x2={W-PR} y2={y(avg)} stroke="#E3B341" strokeWidth="1.5" strokeDasharray="5 4"/>
+      {data.map((d,i)=>{
+        const bX = PL + (i+0.5)*(cW/data.length) - bW/2;
+        const bH2 = ((d.value-mn)/(mx-mn||1))*cH;
+        const bY = PT+cH-bH2;
+        const isT = tip===i;
+        return (
+          <g key={i} onMouseEnter={()=>setTip(i)} onMouseLeave={()=>setTip(null)} style={{cursor:'default'}}>
+            <rect x={bX} y={bY} width={bW} height={bH2} rx="2" fill={isT?'url(#bGrH)':'url(#bGr)'} opacity={isT?1:.85}/>
+            {isT && <text x={bX+bW/2} y={bY-6} textAnchor="middle" fontSize="9" fill="#00B4D8" fontFamily="JetBrains Mono">${d.value.toLocaleString()}</text>}
+            <text x={bX+bW/2} y={H-8} textAnchor="middle" fontSize="8" fill="#8B949E" fontFamily="JetBrains Mono">{d.date.replace('Abr ','')}</text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+
+  // line / area
+  const pts = data.map((d,i)=>`${x(i)},${y(d.value)}`).join(' ');
+  const area = `${PL},${PT+cH} ${pts} ${W-PR},${PT+cH}`;
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} style={{width:'100%',height:H,display:'block'}}>
+      <defs><linearGradient id="aGr" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#00B4D8" stopOpacity=".25"/><stop offset="100%" stopColor="#00B4D8" stopOpacity="0"/></linearGradient></defs>
+      {yTicks.map((v,i)=>{const cy=PT+cH-(v/(mx||1))*cH;return <g key={i}><line x1={PL} y1={cy} x2={W-PR} y2={cy} stroke="rgba(30,45,61,.7)" strokeWidth="1" strokeDasharray="3 3"/><text x={PL-4} y={cy+4} textAnchor="end" fontSize="9" fill="#8B949E" fontFamily="JetBrains Mono">${v>=1000?`${(v/1000).toFixed(0)}k`:v}</text></g>;})}
+      {type==='area' && <polygon points={area} fill="url(#aGr)"/>}
+      <polyline points={pts} fill="none" stroke="#00B4D8" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round"/>
+      {data.map((d,i)=>(
+        <circle key={i} cx={x(i)} cy={y(d.value)} r="3.5" fill="#00B4D8" onMouseEnter={()=>setTip(i)} onMouseLeave={()=>setTip(null)} style={{cursor:'default'}}>
+          {tip===i && <title>${d.date}: ${d.value.toLocaleString()}</title>}
+        </circle>
+      ))}
+      {data.map((d,i)=><text key={i} x={x(i)} y={H-8} textAnchor="middle" fontSize="8" fill="#8B949E" fontFamily="JetBrains Mono">{d.date.replace('Abr ','')}</text>)}
+    </svg>
+  );
+};
+
+/* ── Donut chart ── */
+const DonutChart = ({ data }) => {
+  const [active, setActive] = React.useState(null);
+  const R=50, r=32, cx=65, cy=65;
+  let cumPct = 0;
+  const slices = data.map((d,i)=>{
+    const pct = d.value/100;
+    const startA = cumPct*2*Math.PI - Math.PI/2;
+    cumPct += pct;
+    const endA = cumPct*2*Math.PI - Math.PI/2;
+    const x1=cx+R*Math.cos(startA), y1=cy+R*Math.sin(startA);
+    const x2=cx+R*Math.cos(endA),   y2=cy+R*Math.sin(endA);
+    const ix1=cx+r*Math.cos(startA),iy1=cy+r*Math.sin(startA);
+    const ix2=cx+r*Math.cos(endA),  iy2=cy+r*Math.sin(endA);
+    const lg = pct > 0.5 ? 1 : 0;
+    const path = `M${x1},${y1} A${R},${R} 0 ${lg} 1 ${x2},${y2} L${ix2},${iy2} A${r},${r} 0 ${lg} 0 ${ix1},${iy1} Z`;
+    return { ...d, path, i };
+  });
+  return (
+    <div style={{display:'flex',alignItems:'center',gap:20}}>
+      <svg width="130" height="130" viewBox="0 0 130 130" style={{flexShrink:0}}>
+        {slices.map(s=>(
+          <path key={s.i} d={s.path} fill={s.color} opacity={active===null||active===s.i?1:.35} stroke="var(--bg-card)" strokeWidth="1.5"
+            onMouseEnter={()=>setActive(s.i)} onMouseLeave={()=>setActive(null)} style={{cursor:'default',transition:'opacity .15s'}}/>
+        ))}
+        <text x="65" y="62" textAnchor="middle" fontFamily="JetBrains Mono" fontWeight="700" fontSize="16" fill="#F0F6FC">623</text>
+        <text x="65" y="76" textAnchor="middle" fontFamily="Inter" fontSize="8" fill="#8B949E" letterSpacing="0.05em">RESULTADOS</text>
+      </svg>
+      <div style={{display:'flex',flexDirection:'column',gap:9}}>
+        {data.map((item,i)=>(
+          <div key={i} style={{display:'flex',alignItems:'center',gap:8,opacity:active===null||active===i?1:.35,transition:'opacity .15s',cursor:'default'}}
+            onMouseEnter={()=>setActive(i)} onMouseLeave={()=>setActive(null)}>
+            <div style={{width:8,height:8,borderRadius:2,background:item.color,flexShrink:0}}></div>
+            <span style={{fontSize:12,color:'var(--t2)'}}>{item.name}</span>
+            <span style={{fontSize:12,fontFamily:'JetBrains Mono',fontWeight:700,color:'var(--t1)',marginLeft:'auto',paddingLeft:12}}>{item.value}%</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+/* ── Report line chart ── */
+const RptLine = ({ data }) => {
+  const W=500,H=210,PL=48,PB=28,PT=10,PR=20;
+  const cW=W-PL-PR, cH=H-PB-PT;
+  const iVals=data.map(d=>d.investment), rVals=data.map(d=>d.results);
+  const iMax=Math.max(...iVals)||1, rMax=Math.max(...rVals)||1;
+  const xi=(i)=>PL+(i/(data.length-1||1))*cW;
+  const yi=(v)=>PT+cH-(v/iMax)*cH;
+  const yr=(v)=>PT+cH-(v/rMax)*cH;
+  const ipts=data.map((d,i)=>`${xi(i)},${yi(d.investment)}`).join(' ');
+  const rpts=data.map((d,i)=>`${xi(i)},${yr(d.results)}`).join(' ');
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} style={{width:'100%',height:H,display:'block'}}>
+      {[0,.25,.5,.75,1].map((f,i)=>{const cy=PT+cH-f*cH;return <line key={i} x1={PL} y1={cy} x2={W-PR} y2={cy} stroke="rgba(30,45,61,.7)" strokeWidth="1" strokeDasharray="3 3"/>;})}
+      {data.map((d,i)=><text key={i} x={xi(i)} y={H-8} textAnchor="middle" fontSize="10" fill="#8B949E" fontFamily="JetBrains Mono">{d.date}</text>)}
+      <polyline points={ipts} fill="none" stroke="#00B4D8" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round"/>
+      <polyline points={rpts} fill="none" stroke="#39D353" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" strokeDasharray="6 3"/>
+      {data.map((d,i)=><circle key={`i${i}`} cx={xi(i)} cy={yi(d.investment)} r="4" fill="#00B4D8"/>)}
+      {data.map((d,i)=><circle key={`r${i}`} cx={xi(i)} cy={yr(d.results)} r="4" fill="#39D353"/>)}
+    </svg>
+  );
+};
+
+/* ── Compare bar chart ── */
+const CmpBar = ({ data }) => {
+  const W=500,H=210,PL=10,PB=28,PT=10,PR=10;
+  const cW=W-PL-PR, cH=H-PB-PT;
+  const iVals=data.map(d=>d.investment), rVals=data.map(d=>d.results);
+  const mx=Math.max(...iVals)||1;
+  const bSlot=cW/data.length, bW=Math.floor(bSlot*0.28);
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} style={{width:'100%',height:H,display:'block'}}>
+      <defs>
+        <linearGradient id="cg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#00B4D8"/><stop offset="100%" stopColor="#0077B6"/></linearGradient>
+        <linearGradient id="cg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#39D353"/><stop offset="100%" stopColor="#1a7a28"/></linearGradient>
+      </defs>
+      {[0,.25,.5,.75,1].map((f,i)=>{const cy=PT+cH-f*cH;return <line key={i} x1={PL} y1={cy} x2={W-PR} y2={cy} stroke="rgba(30,45,61,.7)" strokeWidth="1" strokeDasharray="3 3"/>;})}
+      {data.map((d,i)=>{
+        const slotX=PL+i*bSlot+bSlot/2;
+        const iH=((d.investment/mx))*cH, rH=((d.results/Math.max(...rVals)||1))*cH;
+        return (
+          <g key={i}>
+            <rect x={slotX-bW-2} y={PT+cH-iH} width={bW} height={iH} rx="2" fill="url(#cg1)"/>
+            <rect x={slotX+2} y={PT+cH-rH} width={bW} height={rH} rx="2" fill="url(#cg2)"/>
+            <text x={slotX} y={H-8} textAnchor="middle" fontSize="9" fill="#8B949E" fontFamily="JetBrains Mono">{d.name}</text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+};
+
+// ═══════════════════════════════════════════════
+//  SHARED UI
+// ═══════════════════════════════════════════════
+const Badge = ({ status }) => {
+  const cfg = {
+    active:  {l:'Activa',      c:'#39D353',bg:'rgba(57,211,83,.1)'},
+    review:  {l:'En revisión', c:'#E3B341',bg:'rgba(227,179,65,.1)'},
+    paused:  {l:'Pausada',     c:'#F85149',bg:'rgba(248,81,73,.1)'},
+    archived:{l:'Archivada',   c:'#8B949E',bg:'rgba(139,148,158,.1)'},
+  }[status] || {l:status,c:'#8B949E',bg:'rgba(139,148,158,.1)'};
+  return (
+    <div style={{display:'inline-flex',alignItems:'center',gap:5,background:cfg.bg,borderRadius:6,padding:'3px 8px'}}>
+      <div style={{width:5,height:5,borderRadius:'50%',background:cfg.c,flexShrink:0}}></div>
+      <span style={{fontSize:11,fontWeight:600,color:cfg.c}}>{cfg.l}</span>
+    </div>
+  );
+};
+
+const ABtn = ({ label, icon, color='var(--t2)' }) => (
+  <button style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:6,border:'1px solid var(--border)',background:'transparent',cursor:'pointer',fontSize:11,fontWeight:600,color,fontFamily:'Inter',transition:'all .12s'}}
+    onMouseEnter={e=>{e.currentTarget.style.background='rgba(0,180,216,.07)';e.currentTarget.style.borderColor='rgba(0,180,216,.3)';}}
+    onMouseLeave={e=>{e.currentTarget.style.background='transparent';e.currentTarget.style.borderColor='var(--border)';}}
+  ><Ic n={icon} s={12} c={color}/>{label}</button>
+);
+
+// ═══════════════════════════════════════════════
+//  SIDEBAR
+// ═══════════════════════════════════════════════
+const NAV = [
+  {id:'dashboard',label:'Dashboard',    icon:'dashboard'},
+  {id:'campaigns',label:'Campañas',     icon:'campaigns'},
+  {id:'adsets',   label:'Conjuntos',    icon:'adsets'},
+  {id:'ads',      label:'Anuncios',     icon:'ads'},
+  {id:'reports',  label:'Reportes',     icon:'reports'},
+  {id:'settings', label:'Configuración',icon:'settings'},
+];
+
+const Sidebar = ({ view, setView, col, setCol }) => {
+  const [hov, setHov] = React.useState(null);
+  const W = col ? 72 : 260;
+  return (
+    <div style={{width:W,minWidth:W,background:'var(--bg-side)',borderRight:'1px solid var(--border)',display:'flex',flexDirection:'column',transition:'width .3s cubic-bezier(.4,0,.2,1),min-width .3s cubic-bezier(.4,0,.2,1)',overflow:'hidden',flexShrink:0,position:'relative',zIndex:10}}>
+      {/* Logo */}
+      <div style={{height:60,display:'flex',alignItems:'center',padding:'0 20px',justifyContent:col?'center':'flex-start',gap:10,borderBottom:'1px solid var(--border)',flexShrink:0}}>
+        <div style={{width:32,height:32,borderRadius:8,flexShrink:0,background:'linear-gradient(135deg,#00B4D8,#0077B6)',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 0 16px rgba(0,180,216,.3)'}}>
+          <svg viewBox="0 0 680 680" width="20" height="20" fill="none">
+            <circle cx="340" cy="340" r="220" stroke="white" strokeWidth="30"/>
+            <path d="M260 450 L310 240" stroke="white" strokeWidth="50" strokeLinecap="round"/>
+            <path d="M420 450 L370 240" stroke="white" strokeWidth="50" strokeLinecap="round"/>
+            <path d="M270 340 L300 340 L310 315 L325 365 L340 305 L355 365 L370 315 L380 340 L410 340" stroke="white" strokeWidth="28" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+            <circle cx="340" cy="305" r="32" fill="white"/>
+          </svg>
+        </div>
+        {!col && <span style={{fontFamily:'Syne',fontWeight:800,fontSize:'.95rem',letterSpacing:'.12em',whiteSpace:'nowrap',color:'var(--t1)'}}>ADS <span style={{color:'var(--accent)'}}>PLUS</span></span>}
+      </div>
+      {/* User */}
+      {!col && (
+        <div style={{padding:'10px 16px',display:'flex',alignItems:'center',gap:10,borderBottom:'1px solid var(--border)',flexShrink:0}}>
+          <div style={{width:34,height:34,borderRadius:'50%',flexShrink:0,background:'linear-gradient(135deg,#00B4D8,#023E8A)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:700,color:'white'}}>AC</div>
+          <div style={{minWidth:0}}>
+            <div style={{fontSize:12,fontWeight:600,color:'var(--t1)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>Cuenta principal</div>
+            <div style={{fontSize:10,color:'var(--t2)'}}>Admin · Pro</div>
+          </div>
+        </div>
+      )}
+      {/* Nav */}
+      <nav style={{flex:1,padding:'8px',display:'flex',flexDirection:'column',gap:2,overflowY:'auto'}}>
+        {NAV.map(item=>{
+          const isA = view===item.id, isH = hov===item.id;
+          return (
+            <div key={item.id} onClick={()=>setView(item.id)} onMouseEnter={()=>setHov(item.id)} onMouseLeave={()=>setHov(null)} title={col?item.label:''} style={{display:'flex',alignItems:'center',gap:10,padding:col?'10px 0':'9px 12px',justifyContent:col?'center':'flex-start',borderRadius:8,cursor:'pointer',background:isA?'rgba(0,180,216,.12)':isH?'rgba(0,180,216,.06)':'transparent',borderLeft:isA?'2px solid var(--accent)':'2px solid transparent',color:isA?'var(--accent)':isH?'var(--t1)':'var(--t2)',transition:'all .15s ease'}}>
+              <Ic n={item.icon} s={17} c={isA?'var(--accent)':isH?'var(--t1)':'var(--t2)'}/>
+              {!col && <span style={{fontSize:13.5,fontWeight:isA?600:400,whiteSpace:'nowrap'}}>{item.label}</span>}
+            </div>
+          );
+        })}
+      </nav>
+      {/* Status */}
+      <div style={{padding:col?'14px 0':'12px 16px',borderTop:'1px solid var(--border)',flexShrink:0,display:'flex',alignItems:'center',gap:8,justifyContent:col?'center':'flex-start'}}>
+        <div style={{width:7,height:7,borderRadius:'50%',background:'var(--ok)',boxShadow:'0 0 6px rgba(57,211,83,.7)',animation:'dotPulse 2.5s ease infinite',flexShrink:0}}></div>
+        {!col && <span style={{fontSize:11,color:'var(--t2)',fontWeight:500}}>Sistema Activo</span>}
+      </div>
+      {/* Toggle */}
+      <button onClick={()=>setCol(!col)} style={{position:'absolute',top:'50%',right:-14,transform:'translateY(-50%)',width:28,height:28,borderRadius:'50%',background:'var(--bg-card)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',color:'var(--t2)',zIndex:20,boxShadow:'0 2px 8px rgba(0,0,0,.4)',transition:'background .15s'}}
+        onMouseEnter={e=>{e.currentTarget.style.background='#1E2D3D';}} onMouseLeave={e=>{e.currentTarget.style.background='var(--bg-card)';}}>
+        <Ic n={col?'chevR':'chevL'} s={13}/>
+      </button>
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════
+//  TOPBAR
+// ═══════════════════════════════════════════════
+const TopBar = ({ view, onSearch }) => {
+  const [no, setNo] = React.useState(false);
+  const [po, setPo] = React.useState(false);
+  const [unread, setUnread] = React.useState(3);
+  const labels = {dashboard:'Dashboard',campaigns:'Campañas',adsets:'Conjuntos',ads:'Anuncios',reports:'Reportes',settings:'Configuración'};
+  const notifs = [
+    {t:'Black Friday Q2 superó el 90% del presupuesto',time:'hace 5 min',c:'var(--warn)'},
+    {t:'Retargeting IG alcanzó 100 conversiones',time:'hace 1 hora',c:'var(--ok)'},
+    {t:'Awareness Mayo en revisión por Meta',time:'hace 3 horas',c:'var(--err)'},
+  ];
+  React.useEffect(()=>{ const fn=()=>{setNo(false);setPo(false);}; document.addEventListener('click',fn); return()=>document.removeEventListener('click',fn); },[]);
+  const sp = e => e.stopPropagation();
+  return (
+    <div style={{height:56,flexShrink:0,background:'rgba(10,15,22,.96)',borderBottom:'1px solid var(--border)',backdropFilter:'blur(12px)',display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 20px',gap:12}}>
+      <div style={{display:'flex',alignItems:'center',gap:6,fontSize:13}}>
+        <span style={{color:'var(--t2)'}}>Cuenta principal</span>
+        <Ic n="chevR" s={13} c="var(--t2)"/>
+        <span style={{color:'var(--t1)',fontWeight:600,fontFamily:'Syne'}}>{labels[view]}</span>
+      </div>
+      <div style={{display:'flex',alignItems:'center',gap:8}}>
+        <div onClick={()=>onSearch&&onSearch()} style={{display:'flex',alignItems:'center',gap:8,background:'rgba(30,45,61,.5)',border:'1px solid var(--border)',borderRadius:8,padding:'6px 12px',cursor:'pointer',color:'var(--t2)',fontSize:13,transition:'border-color .15s,background .15s'}}
+          onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(0,180,216,.35)';e.currentTarget.style.background='rgba(30,45,61,.7)';}}
+          onMouseLeave={e=>{e.currentTarget.style.borderColor='var(--border)';e.currentTarget.style.background='rgba(30,45,61,.5)';}}>
+          <Ic n="search" s={14}/><span>Buscar...</span>
+          <span style={{fontSize:10,background:'rgba(30,45,61,.8)',borderRadius:4,padding:'2px 5px',fontFamily:'JetBrains Mono',color:'var(--t2)'}}>⌘K</span>
+        </div>
+        {/* Bell */}
+        <div style={{position:'relative'}} onClick={sp}>
+          <button onClick={()=>{setNo(n=>!n);setPo(false);}} style={{width:36,height:36,borderRadius:8,background:'rgba(30,45,61,.5)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',color:'var(--t2)',position:'relative',transition:'background .15s'}}
+            onMouseEnter={e=>e.currentTarget.style.background='rgba(0,180,216,.08)'} onMouseLeave={e=>e.currentTarget.style.background='rgba(30,45,61,.5)'}>
+            <Ic n="bell" s={16}/>{unread>0&&<div style={{position:'absolute',top:-4,right:-4,minWidth:16,height:16,borderRadius:8,background:'var(--err)',border:'2px solid var(--bg-main)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:9,fontWeight:700,color:'white',padding:'0 3px'}}>{unread}</div>}
+          </button>
+          {no && (
+            <div style={{position:'absolute',top:44,right:0,width:292,background:'var(--bg-card)',border:'1px solid var(--border)',borderRadius:10,zIndex:200,boxShadow:'0 8px 32px rgba(0,0,0,.6)',overflow:'hidden'}}>
+              <div style={{padding:'12px 16px',borderBottom:'1px solid var(--border)',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                <span style={{fontSize:12,fontWeight:700,color:'var(--t2)',textTransform:'uppercase',letterSpacing:'.08em'}}>Notificaciones</span>
+                {unread>0&&<button onClick={()=>setUnread(0)} style={{background:'transparent',border:'none',fontSize:11,color:'var(--accent)',cursor:'pointer',fontFamily:'Inter',fontWeight:600,padding:0}}>Marcar leídas</button>}
+              </div>
+              {notifs.map((n,i)=>(
+                <div key={i} style={{padding:'10px 16px',borderBottom:'1px solid rgba(30,45,61,.4)',cursor:'pointer'}}
+                  onMouseEnter={e=>e.currentTarget.style.background='rgba(0,180,216,.04)'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+                  <div style={{display:'flex',gap:8}}><div style={{width:6,height:6,borderRadius:'50%',background:n.c,flexShrink:0,marginTop:4}}></div><div><div style={{fontSize:12,color:'var(--t1)',lineHeight:1.45}}>{n.t}</div><div style={{fontSize:11,color:'var(--t2)',marginTop:3}}>{n.time}</div></div></div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        {/* Avatar */}
+        <div style={{position:'relative'}} onClick={sp}>
+          <button onClick={()=>{setPo(n=>!n);setNo(false);}} style={{width:36,height:36,borderRadius:'50%',background:'linear-gradient(135deg,#00B4D8,#023E8A)',border:'2px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',fontSize:12,fontWeight:700,color:'white'}}>AC</button>
+          {po && (
+            <div style={{position:'absolute',top:44,right:0,width:200,background:'var(--bg-card)',border:'1px solid var(--border)',borderRadius:10,zIndex:200,boxShadow:'0 8px 32px rgba(0,0,0,.6)',overflow:'hidden'}}>
+              <div style={{padding:'12px 16px',borderBottom:'1px solid var(--border)'}}><div style={{fontSize:13,fontWeight:600}}>Cuenta principal</div><div style={{fontSize:11,color:'var(--t2)'}}>admin@adsplus.io</div></div>
+              {['Perfil','Configuración','Cerrar sesión'].map((item,i)=>(
+                <div key={item} style={{padding:'10px 16px',fontSize:13,cursor:'pointer',color:i===2?'var(--err)':'var(--t1)',transition:'background .12s'}}
+                  onMouseEnter={e=>e.currentTarget.style.background='rgba(0,180,216,.05)'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>{item}</div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════
+//  DASHBOARD VIEW
+// ═══════════════════════════════════════════════
+const KPICard = ({ kpi, delay=0 }) => {
+  const [hov, setHov] = React.useState(false);
+  const isD = kpi.dir==='down';
+  const iC = {dollar:'#00B4D8',users:'#39D353',click:'#0077B6',cost:'#F85149'};
+  const iB = {dollar:'rgba(0,180,216,.1)',users:'rgba(57,211,83,.1)',click:'rgba(0,119,182,.1)',cost:'rgba(248,81,73,.1)'};
+  return (
+    <div onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)} className="card" style={{padding:20,border:`1px solid ${hov?'rgba(0,180,216,.28)':'rgba(0,180,216,.1)'}`,boxShadow:hov?'0 0 30px rgba(0,180,216,.08)':'none',transform:hov?'translateY(-2px)':'none',transition:'all .2s ease',animation:`fadeUp .35s ${delay}ms ease-out both`,cursor:'default'}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:12}}>
+        <span style={{fontSize:10,fontWeight:600,letterSpacing:'.1em',textTransform:'uppercase',color:'var(--t2)'}}>{kpi.label}</span>
+        <div style={{width:30,height:30,borderRadius:7,background:iB[kpi.icon],display:'flex',alignItems:'center',justifyContent:'center'}}><Ic n={kpi.icon} s={14} c={iC[kpi.icon]}/></div>
+      </div>
+      <div style={{fontFamily:'JetBrains Mono',fontSize:30,fontWeight:700,color:'var(--t1)',lineHeight:1,marginBottom:10}}>{kpi.value}</div>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+        <div style={{display:'flex',alignItems:'center',gap:4,fontSize:12,fontWeight:600,color:isD?'var(--err)':'var(--ok)'}}>
+          <Ic n={isD?'arrowDown':'arrowUp'} s={11} c={isD?'var(--err)':'var(--ok)'}/>{kpi.change}<span style={{color:'var(--t2)',fontWeight:400,fontSize:11}}> vs ant.</span>
+        </div>
+        <Spark data={kpi.spark} color={isD?'#F85149':'#00B4D8'} w={68} h={26}/>
+      </div>
+    </div>
+  );
+};
+
+const CampRow = ({ c, delay=0 }) => {
+  const [hov, setHov] = React.useState(false);
+  const tc = c.tdir==='up'?'#39D353':c.tdir==='down'?'#F85149':'#8B949E';
+  const canA = c.status==='paused'||c.status==='review';
+  const cd = {padding:'11px 14px',fontSize:13};
+  return (
+    <tr onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)} style={{borderBottom:'1px solid rgba(30,45,61,.5)',background:hov?'rgba(0,180,216,.04)':'transparent',borderLeft:hov?'2px solid var(--accent)':'2px solid transparent',transition:'background .15s,border-color .15s',animation:`fadeUp .3s ${delay}ms ease-out both`}}>
+      <td style={{...cd,fontWeight:600,color:'var(--t1)'}}>{c.name}</td>
+      <td style={cd}><Badge status={c.status}/></td>
+      <td style={{...cd,fontFamily:'JetBrains Mono',fontWeight:600,color:'var(--t1)'}}>${c.investment.toLocaleString()}</td>
+      <td style={{...cd,fontFamily:'JetBrains Mono',color:'var(--t1)'}}>{c.results}</td>
+      <td style={{...cd,fontFamily:'JetBrains Mono',color:'var(--t1)'}}>${c.cpr.toFixed(2)}</td>
+      <td style={cd}><Spark data={c.trend} color={tc} w={60} h={22}/></td>
+      <td style={cd}><div style={{display:'flex',gap:5}}><ABtn label="Editar" icon="edit"/><ABtn label={canA?'Activar':'Pausar'} icon={canA?'play':'pause'} color={canA?'var(--ok)':'var(--warn)'}/><ABtn label="Ver" icon="eye" color="var(--accent)"/></div></td>
+    </tr>
+  );
+};
+
+const DashView = ({ onNew }) => {
+  const [period, setPeriod] = React.useState('30');
+  const [pOpen, setPOpen]   = React.useState(false);
+  const [cType, setCType]   = React.useState('bar');
+  const [sCol, setSCol]     = React.useState('investment');
+  const [sDir, setSDir]     = React.useState('desc');
+  const [q, setQ]           = React.useState('');
+  const [sf, setSf]         = React.useState('all');
+  const [pg, setPg]         = React.useState(0);
+  const PG = 5;
+  const opts = [{v:'7',l:'Últimos 7 días'},{v:'14',l:'Últimos 14 días'},{v:'30',l:'Últimos 30 días'},{v:'custom',l:'Personalizado'}];
+  const sort = col => { if(sCol===col)setSDir(d=>d==='asc'?'desc':'asc'); else{setSCol(col);setSDir('desc');} };
+  const rows = CAMPAIGNS.filter(c=>sf==='all'||c.status===sf).filter(c=>!q||c.name.toLowerCase().includes(q.toLowerCase()))
+    .sort((a,b)=>{const d=sDir==='asc'?1:-1;if(sCol==='name')return d*a.name.localeCompare(b.name);return d*(a[sCol]-b[sCol]);});
+  const paged = rows.slice(pg*PG,(pg+1)*PG);
+  const tot   = Math.ceil(rows.length/PG);
+  const TH = ({col,l}) => (
+    <th style={{padding:'11px 14px',textAlign:'left'}}>
+      <div onClick={()=>col!=='trend'&&col!=='actions'&&sort(col)} style={{display:'flex',alignItems:'center',gap:4,fontSize:10,fontWeight:700,textTransform:'uppercase',letterSpacing:'.08em',color:sCol===col?'var(--accent)':'var(--t2)',cursor:col==='trend'||col==='actions'?'default':'pointer',userSelect:'none'}}>
+        {l}{col!=='trend'&&col!=='actions'&&<Ic n="chevD" s={10} c={sCol===col?'var(--accent)':'var(--t2)'}/>}
+      </div>
+    </th>
+  );
+  return (
+    <div style={{padding:24,overflowY:'auto',height:'100%',display:'flex',flexDirection:'column',gap:20}}>
+      <div className="fade-up" style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:12}}>
+        <div>
+          <h1 style={{fontFamily:'Syne',fontSize:28,fontWeight:800,color:'var(--t1)',marginBottom:3}}>Resumen de rendimiento</h1>
+          <p style={{fontSize:13,color:'var(--t2)'}}>Cuenta principal · {opts.find(o=>o.v===period)?.l}</p>
+        </div>
+        <div style={{display:'flex',gap:8,alignItems:'center'}}>
+          <div style={{position:'relative'}}>
+            <button onClick={()=>setPOpen(o=>!o)} style={{display:'flex',alignItems:'center',gap:8,background:'var(--bg-card)',border:'1px solid var(--border)',borderRadius:8,padding:'8px 13px',color:'var(--t1)',cursor:'pointer',fontSize:13,fontFamily:'Inter'}}>
+              <Ic n="calendar" s={14} c="var(--t2)"/>{opts.find(o=>o.v===period)?.l}<Ic n="chevD" s={13} c="var(--t2)"/>
+            </button>
+            {pOpen && <div style={{position:'absolute',top:44,right:0,zIndex:50,background:'var(--bg-card)',border:'1px solid var(--border)',borderRadius:8,minWidth:180,boxShadow:'0 8px 24px rgba(0,0,0,.5)',overflow:'hidden'}}>
+              {opts.map(o=><div key={o.v} onClick={()=>{setPeriod(o.v);setPOpen(false);}} style={{padding:'9px 14px',fontSize:13,cursor:'pointer',color:period===o.v?'var(--accent)':'var(--t1)',background:period===o.v?'rgba(0,180,216,.08)':'transparent'}}
+                onMouseEnter={e=>{if(period!==o.v)e.currentTarget.style.background='rgba(0,180,216,.05)';}} onMouseLeave={e=>{if(period!==o.v)e.currentTarget.style.background='transparent';}}>{o.l}</div>)}
+            </div>}
+          </div>
+          <button className="btn-grad" onClick={onNew}><Ic n="plus" s={15}/>Nueva Campaña</button>
+        </div>
+      </div>
+      {/* KPIs */}
+      <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:14}}>
+        {KPIS.map((k,i)=><KPICard key={k.label} kpi={k} delay={i*70}/>)}
+      </div>
+      {/* Charts */}
+      <div style={{display:'grid',gridTemplateColumns:'1.65fr 1fr',gap:14}}>
+        <div className="card" style={{padding:20}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
+            <div><div style={{fontSize:10,fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color:'var(--t2)',marginBottom:2}}>Inversión Diaria</div><div style={{fontSize:13,fontWeight:600,color:'var(--t1)'}}>Últimos 14 días</div></div>
+            <div style={{display:'flex',gap:3}}>
+              {[['bar','Barras'],['line','Línea'],['area','Área']].map(([t,l])=>(
+                <button key={t} onClick={()=>setCType(t)} style={{padding:'4px 9px',borderRadius:6,border:'none',cursor:'pointer',fontSize:11,fontWeight:600,fontFamily:'Inter',background:cType===t?'rgba(0,180,216,.15)':'transparent',color:cType===t?'var(--accent)':'var(--t2)',transition:'all .15s'}}>{l}</button>
+              ))}
+            </div>
+          </div>
+          <InvChart data={DAILY} type={cType}/>
+        </div>
+        <div className="card" style={{padding:20}}>
+          <div style={{marginBottom:18}}><div style={{fontSize:10,fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color:'var(--t2)',marginBottom:2}}>Distribución</div><div style={{fontSize:13,fontWeight:600,color:'var(--t1)'}}>Por Objetivo</div></div>
+          <DonutChart data={DONUT}/>
+        </div>
+      </div>
+      {/* Table */}
+      <div className="card" style={{overflow:'hidden'}}>
+        <div style={{padding:'14px 18px',borderBottom:'1px solid var(--border)',display:'flex',justifyContent:'space-between',alignItems:'center',gap:10,flexWrap:'wrap'}}>
+          <div style={{fontFamily:'Syne',fontSize:15,fontWeight:700}}>Campañas Activas</div>
+          <div style={{display:'flex',gap:8}}>
+            <div style={{position:'relative'}}>
+              <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Buscar campaña..." style={{background:'var(--bg-main)',border:'1px solid var(--border)',borderRadius:7,padding:'6px 12px 6px 30px',color:'var(--t1)',fontSize:12,fontFamily:'Inter',width:190,outline:'none'}}/>
+              <div style={{position:'absolute',left:9,top:'50%',transform:'translateY(-50%)'}}><Ic n="search" s={13} c="var(--t2)"/></div>
+            </div>
+            <select value={sf} onChange={e=>{setSf(e.target.value);setPg(0);}} style={{background:'var(--bg-main)',border:'1px solid var(--border)',borderRadius:7,padding:'6px 10px',color:'var(--t2)',fontSize:12,fontFamily:'Inter',outline:'none',cursor:'pointer'}}>
+              <option value="all">Todos los estados</option><option value="active">Activas</option><option value="review">En revisión</option><option value="paused">Pausadas</option>
+            </select>
+          </div>
+        </div>
+        <div style={{overflowX:'auto'}}>
+          <table style={{width:'100%',borderCollapse:'collapse'}}>
+            <thead><tr style={{borderBottom:'1px solid var(--border)'}}>
+              {[{col:'name',l:'Nombre'},{col:'status',l:'Estado'},{col:'investment',l:'Inversión'},{col:'results',l:'Resultados'},{col:'cpr',l:'CPR'},{col:'trend',l:'Tendencia'},{col:'actions',l:'Acciones'}].map(h=><TH key={h.col} col={h.col} l={h.l}/>)}
+            </tr></thead>
+            <tbody>
+              {paged.map((c,i)=><CampRow key={c.id} c={c} delay={i*40}/>)}
+              {paged.length===0 && <tr><td colSpan={7}><div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'52px 0',gap:12}}>
+                <svg width="54" height="54" viewBox="0 0 54 54" fill="none"><rect x="3" y="3" width="48" height="48" rx="10" stroke="rgba(0,180,216,.22)" strokeWidth="1.5" strokeDasharray="5 3"/><path d="M19 21h16M19 27h10" stroke="rgba(0,180,216,.28)" strokeWidth="2" strokeLinecap="round"/><circle cx="27" cy="13" r="4" stroke="rgba(0,180,216,.38)" strokeWidth="1.5"/><path d="M33 36l4 4M33 40l4-4" stroke="rgba(0,180,216,.28)" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                <div style={{fontSize:14,fontWeight:600,color:'var(--t2)'}}>Sin resultados</div>
+                <div style={{fontSize:12,color:'var(--t2)',opacity:.55}}>Prueba con otros filtros o busca por nombre</div>
+              </div></td></tr>}
+            </tbody>
+          </table>
+        </div>
+        <div style={{padding:'10px 18px',borderTop:'1px solid var(--border)',display:'flex',justifyContent:'space-between',alignItems:'center',fontSize:12,color:'var(--t2)'}}>
+          <span>Mostrando {pg*PG+1}–{Math.min((pg+1)*PG,rows.length)} de {rows.length} campañas</span>
+          <div style={{display:'flex',gap:5}}>
+            {['Anterior','Siguiente'].map((l,i)=>{const dis=i===0?pg===0:pg>=tot-1;return(
+              <button key={l} onClick={()=>setPg(p=>i===0?Math.max(0,p-1):Math.min(tot-1,p+1))} disabled={dis} style={{padding:'5px 12px',borderRadius:6,border:'1px solid var(--border)',background:'transparent',color:dis?'var(--t2)':'var(--t1)',cursor:dis?'not-allowed':'pointer',fontSize:12,fontFamily:'Inter',opacity:dis?.35:1}}>{l}</button>
+            );})}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════
+//  CAMPAIGNS VIEW
+// ═══════════════════════════════════════════════
+const CampCard = ({ c, delay=0 }) => {
+  const [hov,setHov]=React.useState(false);
+  const tc=c.tdir==='up'?'#39D353':c.tdir==='down'?'#F85149':'#8B949E';
+  const pct=Math.round((c.investment/c.budget)*100);
+  const canA=c.status==='paused'||c.status==='review';
+  return (
+    <div onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)} className="card" style={{padding:18,border:`1px solid ${hov?'rgba(0,180,216,.28)':'rgba(0,180,216,.1)'}`,transform:hov?'translateY(-2px)':'none',boxShadow:hov?'0 10px 36px rgba(0,0,0,.35)':'none',transition:'all .2s ease',animation:`fadeUp .35s ${delay}ms ease-out both`,display:'flex',flexDirection:'column',gap:14}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
+        <div><div style={{fontSize:14,fontWeight:700,color:'var(--t1)',marginBottom:3}}>{c.name}</div><div style={{fontSize:11,color:'var(--t2)'}}>{c.obj} · {c.platform}</div></div>
+        <Badge status={c.status}/>
+      </div>
+      <div>
+        <div style={{display:'flex',justifyContent:'space-between',fontSize:11,color:'var(--t2)',marginBottom:5}}><span>Presupuesto</span><span style={{fontFamily:'JetBrains Mono',color:pct>85?'var(--err)':'var(--t1)',fontWeight:600}}>{pct}%</span></div>
+        <div style={{background:'var(--border)',borderRadius:4,height:5,overflow:'hidden'}}><div style={{height:'100%',width:`${pct}%`,borderRadius:4,transition:'width .5s ease',background:pct>85?'linear-gradient(90deg,var(--err),#ff6b6b)':'linear-gradient(90deg,#00B4D8,#0077B6)'}}/></div>
+      </div>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:6}}>
+        {[{l:'Inversión',v:`$${c.investment.toLocaleString()}`},{l:'Resultados',v:c.results},{l:'CPR',v:`$${c.cpr.toFixed(2)}`}].map(m=>(
+          <div key={m.l} style={{textAlign:'center',background:'rgba(0,180,216,.04)',borderRadius:7,padding:'8px 4px'}}>
+            <div style={{fontSize:9,color:'var(--t2)',textTransform:'uppercase',letterSpacing:'.06em',marginBottom:3}}>{m.l}</div>
+            <div style={{fontFamily:'JetBrains Mono',fontSize:13,fontWeight:700,color:'var(--t1)'}}>{m.v}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{display:'flex',justifyContent:'center'}}><Spark data={c.trend} color={tc} w={180} h={34}/></div>
+      <div style={{display:'flex',gap:6,borderTop:'1px solid var(--border)',paddingTop:12}}>
+        {[{l:'Editar',i:'edit',c:'var(--t2)'},{l:canA?'Activar':'Pausar',i:canA?'play':'pause',c:canA?'var(--ok)':'var(--warn)'},{l:'Ver',i:'eye',c:'var(--accent)'}].map(b=>(
+          <button key={b.l} style={{flex:1,padding:'6px 0',borderRadius:6,border:'1px solid var(--border)',background:'transparent',cursor:'pointer',fontSize:11,fontWeight:600,color:b.c,display:'flex',alignItems:'center',justifyContent:'center',gap:4,fontFamily:'Inter',transition:'background .12s'}}
+            onMouseEnter={e=>e.currentTarget.style.background='rgba(0,180,216,.06)'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+            <Ic n={b.i} s={12} c={b.c}/>{b.l}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const CampsView = ({ onNew }) => {
+  const [vm,setVm]=React.useState('cards');
+  const [sf,setSf]=React.useState('all');
+  const [q,setQ] =React.useState('');
+  const flt=CAMPAIGNS.filter(c=>sf==='all'||c.status===sf).filter(c=>!q||c.name.toLowerCase().includes(q.toLowerCase()));
+  return (
+    <div style={{padding:24,overflowY:'auto',height:'100%',display:'flex',flexDirection:'column',gap:20}}>
+      <div className="fade-up" style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:12}}>
+        <h1 style={{fontFamily:'Syne',fontSize:28,fontWeight:800,color:'var(--t1)'}}>Campañas</h1>
+        <button className="btn-grad" onClick={onNew}><Ic n="plus" s={15}/>Nueva Campaña</button>
+      </div>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:10}}>
+        <div style={{display:'flex',gap:4,background:'var(--bg-card)',border:'1px solid var(--border)',borderRadius:8,padding:3}}>
+          {[{k:'all',l:'Todas'},{k:'active',l:'Activas'},{k:'paused',l:'Pausadas'},{k:'review',l:'En revisión'}].map(f=>(
+            <button key={f.k} onClick={()=>setSf(f.k)} style={{padding:'5px 13px',borderRadius:6,border:'none',cursor:'pointer',fontSize:12,fontWeight:600,fontFamily:'Inter',background:sf===f.k?'var(--accent)':'transparent',color:sf===f.k?'white':'var(--t2)',transition:'all .15s'}}>{f.l}</button>
+          ))}
+        </div>
+        <div style={{display:'flex',gap:8}}>
+          <div style={{position:'relative'}}>
+            <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Buscar..." style={{background:'var(--bg-card)',border:'1px solid var(--border)',borderRadius:7,padding:'7px 12px 7px 30px',color:'var(--t1)',fontSize:12,fontFamily:'Inter',width:170,outline:'none'}}/>
+            <div style={{position:'absolute',left:9,top:'50%',transform:'translateY(-50%)'}}><Ic n="search" s={13} c="var(--t2)"/></div>
+          </div>
+          <div style={{display:'flex',gap:2,background:'var(--bg-card)',border:'1px solid var(--border)',borderRadius:8,padding:3}}>
+            {[['cards','grid'],['list','list']].map(([mode,icon])=>(
+              <button key={mode} onClick={()=>setVm(mode)} style={{width:30,height:28,borderRadius:6,border:'none',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',background:vm===mode?'rgba(0,180,216,.15)':'transparent',color:vm===mode?'var(--accent)':'var(--t2)',transition:'all .15s'}}><Ic n={icon} s={14}/></button>
+            ))}
+          </div>
+        </div>
+      </div>
+      {vm==='cards' ? (
+        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:14}}>
+          {flt.map((c,i)=><CampCard key={c.id} c={c} delay={i*55}/>)}
+          {flt.length===0 && (
+            <div style={{gridColumn:'1/-1',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'80px 0',gap:14}}>
+              <svg width="72" height="72" viewBox="0 0 72 72" fill="none"><rect x="8" y="8" width="56" height="56" rx="12" stroke="rgba(0,180,216,.3)" strokeWidth="1.5" strokeDasharray="6 4"/><rect x="22" y="28" width="28" height="3.5" rx="1.75" fill="rgba(0,180,216,.2)"/><rect x="26" y="37" width="20" height="3.5" rx="1.75" fill="rgba(0,180,216,.15)"/><circle cx="36" cy="20" r="5" stroke="rgba(0,180,216,.4)" strokeWidth="1.5"/></svg>
+              <div style={{fontFamily:'Syne',fontSize:17,fontWeight:700,color:'var(--t2)'}}>No hay campañas</div>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="card" style={{overflow:'hidden'}}>
+          <table style={{width:'100%',borderCollapse:'collapse'}}>
+            <thead><tr style={{borderBottom:'1px solid var(--border)'}}>
+              {['Nombre','Estado','Objetivo','Inversión','Resultados','CPR','Presupuesto'].map(h=><th key={h} style={{padding:'11px 14px',textAlign:'left',fontSize:10,fontWeight:700,textTransform:'uppercase',letterSpacing:'.08em',color:'var(--t2)'}}>{h}</th>)}
+            </tr></thead>
+            <tbody>
+              {flt.map((c,i)=>(
+                <tr key={c.id} style={{borderBottom:'1px solid rgba(30,45,61,.5)',transition:'background .12s',animation:`fadeUp .3s ${i*40}ms ease-out both`}}
+                  onMouseEnter={e=>{e.currentTarget.style.background='rgba(0,180,216,.04)';}} onMouseLeave={e=>{e.currentTarget.style.background='transparent';}}>
+                  <td style={{padding:'11px 14px',fontSize:13,fontWeight:600,color:'var(--t1)'}}>{c.name}</td>
+                  <td style={{padding:'11px 14px'}}><Badge status={c.status}/></td>
+                  <td style={{padding:'11px 14px',fontSize:12,color:'var(--t2)'}}>{c.obj}</td>
+                  <td style={{padding:'11px 14px',fontFamily:'JetBrains Mono',fontSize:13,color:'var(--t1)',fontWeight:600}}>${c.investment.toLocaleString()}</td>
+                  <td style={{padding:'11px 14px',fontFamily:'JetBrains Mono',fontSize:13,color:'var(--t1)'}}>{c.results}</td>
+                  <td style={{padding:'11px 14px',fontFamily:'JetBrains Mono',fontSize:13,color:'var(--t1)'}}>${c.cpr.toFixed(2)}</td>
+                  <td style={{padding:'11px 14px'}}>
+                    <div style={{background:'var(--border)',borderRadius:4,height:4,width:80,overflow:'hidden',marginBottom:3}}><div style={{height:'100%',width:`${Math.round((c.investment/c.budget)*100)}%`,background:'linear-gradient(90deg,#00B4D8,#0077B6)',borderRadius:4}}/></div>
+                    <div style={{fontSize:10,color:'var(--t2)'}}>{Math.round((c.investment/c.budget)*100)}%</div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════
+//  REPORTS VIEW
+// ═══════════════════════════════════════════════
+const RptsView = () => {
+  const [period,setPeriod]=React.useState('30');
+  const [dop,setDop]=React.useState(false);
+  const [sel,setSel]=React.useState(['all']);
+  const toggle=id=>{if(id==='all'){setSel(['all']);return;}const n=sel.filter(c=>c!=='all');setSel(n.includes(id)?n.filter(c=>c!==id):[...n,id]);};
+  const tot=CAMPAIGNS.reduce((a,c)=>({investment:a.investment+c.investment,results:a.results+c.results}),{investment:0,results:0});
+  return (
+    <div style={{padding:24,overflowY:'auto',height:'100%',display:'flex',flexDirection:'column',gap:20}}>
+      <div className="fade-up" style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:12}}>
+        <h1 style={{fontFamily:'Syne',fontSize:28,fontWeight:800,color:'var(--t1)'}}>Reportes</h1>
+        <button style={{display:'flex',alignItems:'center',gap:8,background:'var(--bg-card)',border:'1px solid var(--border)',borderRadius:8,padding:'8px 16px',color:'var(--t1)',cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:'Inter'}}><Ic n="download" s={15} c="var(--accent)"/>Exportar PDF</button>
+      </div>
+      <div style={{display:'flex',gap:10,flexWrap:'wrap',alignItems:'center'}}>
+        <select value={period} onChange={e=>setPeriod(e.target.value)} style={{background:'var(--bg-card)',border:'1px solid var(--border)',borderRadius:8,padding:'8px 14px',color:'var(--t1)',fontSize:13,fontFamily:'Inter',outline:'none',cursor:'pointer'}}>
+          {[['7','Últimos 7 días'],['14','Últimos 14 días'],['30','Últimos 30 días'],['90','Últimos 90 días']].map(([v,l])=><option key={v} value={v}>{l}</option>)}
+        </select>
+        <div style={{position:'relative'}}>
+          <button onClick={()=>setDop(o=>!o)} style={{display:'flex',alignItems:'center',gap:8,background:'var(--bg-card)',border:'1px solid var(--border)',borderRadius:8,padding:'8px 14px',color:'var(--t1)',cursor:'pointer',fontSize:13,fontFamily:'Inter'}}>
+            <Ic n="filter" s={14} c="var(--t2)"/>{sel.includes('all')?'Todas las campañas':`${sel.length} seleccionadas`}<Ic n="chevD" s={13} c="var(--t2)"/>
+          </button>
+          {dop && <div style={{position:'absolute',top:44,left:0,zIndex:50,background:'var(--bg-card)',border:'1px solid var(--border)',borderRadius:8,minWidth:230,boxShadow:'0 8px 24px rgba(0,0,0,.5)',overflow:'hidden'}}>
+            {[{id:'all',name:'Todas'},...CAMPAIGNS].map(c=>(
+              <div key={c.id} onClick={()=>toggle(c.id)} style={{padding:'9px 14px',fontSize:13,cursor:'pointer',display:'flex',alignItems:'center',gap:10,color:'var(--t1)'}}
+                onMouseEnter={e=>e.currentTarget.style.background='rgba(0,180,216,.05)'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+                <div style={{width:15,height:15,borderRadius:4,border:`1px solid ${sel.includes(c.id)?'var(--accent)':'var(--border)'}`,background:sel.includes(c.id)?'var(--accent)':'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                  {sel.includes(c.id)&&<Ic n="check" s={9} c="white"/>}
+                </div>{c.name}
+              </div>
+            ))}
+          </div>}
+        </div>
+        <button className="btn-grad">Generar Reporte</button>
+      </div>
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+        <div className="card" style={{padding:20}}>
+          <div style={{fontSize:10,fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color:'var(--t2)',marginBottom:3}}>Evolución</div>
+          <div style={{fontSize:13,fontWeight:600,color:'var(--t1)',marginBottom:16}}>Inversión vs Resultados</div>
+          <RptLine data={RPT_DATA}/>
+          <div style={{display:'flex',gap:16,marginTop:12,justifyContent:'center'}}>
+            {[{c:'#00B4D8',l:'Inversión'},{c:'#39D353',l:'Resultados'}].map(({c,l})=><div key={l} style={{display:'flex',alignItems:'center',gap:6,fontSize:11,color:'var(--t2)'}}><div style={{width:18,height:2,background:c,borderRadius:1}}></div>{l}</div>)}
+          </div>
+        </div>
+        <div className="card" style={{padding:20}}>
+          <div style={{fontSize:10,fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color:'var(--t2)',marginBottom:3}}>Comparativo</div>
+          <div style={{fontSize:13,fontWeight:600,color:'var(--t1)',marginBottom:16}}>Por Campaña</div>
+          <CmpBar data={CMP_DATA}/>
+        </div>
+      </div>
+      <div className="card" style={{overflow:'hidden'}}>
+        <div style={{padding:'14px 18px',borderBottom:'1px solid var(--border)',fontFamily:'Syne',fontSize:15,fontWeight:700}}>Resumen General</div>
+        <table style={{width:'100%',borderCollapse:'collapse'}}>
+          <thead><tr style={{borderBottom:'1px solid var(--border)'}}>
+            {['Campaña','Inversión','Resultados','CPR','Estado'].map(h=><th key={h} style={{padding:'10px 14px',textAlign:'left',fontSize:10,fontWeight:700,textTransform:'uppercase',letterSpacing:'.08em',color:'var(--t2)'}}>{h}</th>)}
+          </tr></thead>
+          <tbody>
+            {CAMPAIGNS.map((c,i)=>(
+              <tr key={c.id} style={{borderBottom:'1px solid rgba(30,45,61,.4)',animation:`fadeUp .3s ${i*40}ms ease-out both`}}>
+                <td style={{padding:'10px 14px',fontSize:13,fontWeight:600,color:'var(--t1)'}}>{c.name}</td>
+                <td style={{padding:'10px 14px',fontFamily:'JetBrains Mono',fontSize:13,color:'var(--t1)'}}>${c.investment.toLocaleString()}</td>
+                <td style={{padding:'10px 14px',fontFamily:'JetBrains Mono',fontSize:13,color:'var(--t1)'}}>{c.results}</td>
+                <td style={{padding:'10px 14px',fontFamily:'JetBrains Mono',fontSize:13,color:'var(--t1)'}}>${c.cpr.toFixed(2)}</td>
+                <td style={{padding:'10px 14px'}}><Badge status={c.status}/></td>
+              </tr>
+            ))}
+            <tr style={{borderTop:'2px solid var(--border)',background:'rgba(0,180,216,.04)'}}>
+              <td style={{padding:'10px 14px',fontSize:13,fontWeight:700,color:'var(--accent)'}}>TOTAL</td>
+              <td style={{padding:'10px 14px',fontFamily:'JetBrains Mono',fontSize:13,fontWeight:700,color:'var(--accent)'}}>${tot.investment.toLocaleString()}</td>
+              <td style={{padding:'10px 14px',fontFamily:'JetBrains Mono',fontSize:13,fontWeight:700,color:'var(--accent)'}}>{tot.results}</td>
+              <td style={{padding:'10px 14px',fontFamily:'JetBrains Mono',fontSize:13,fontWeight:700,color:'var(--accent)'}}>${(tot.investment/tot.results).toFixed(2)}</td>
+              <td style={{padding:'10px 14px',fontSize:12,color:'var(--t2)'}}>—</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════
+//  SETTINGS VIEW
+// ═══════════════════════════════════════════════
+const SetView = () => {
+  const [sec,setSec]=React.useState('cuenta');
+  const [intg,setIntg]=React.useState({meta:true,google:false,tiktok:false});
+  const [nots,setNots]=React.useState({email:true,slack:false,budget:true,results:true,weekly:false});
+  const secs=[{id:'cuenta',l:'Cuenta',i:'user'},{id:'equipo',l:'Equipo & Permisos',i:'users'},{id:'integraciones',l:'Integraciones',i:'link'},{id:'facturacion',l:'Facturación',i:'creditCard'},{id:'notificaciones',l:'Notificaciones',i:'bell'}];
+  const Tog=({on,onChange})=>(
+    <div onClick={onChange} style={{cursor:'pointer'}}>
+      <div style={{width:40,height:22,borderRadius:11,background:on?'var(--accent)':'var(--border)',position:'relative',transition:'background .2s'}}>
+        <div style={{position:'absolute',top:2,left:on?19:2,width:16,height:16,borderRadius:'50%',background:'white',transition:'left .2s ease',boxShadow:'0 1px 4px rgba(0,0,0,.3)'}}/>
+      </div>
+    </div>
+  );
+  const inp={width:'100%',background:'var(--bg-main)',border:'1px solid var(--border)',borderRadius:8,padding:'9px 13px',color:'var(--t1)',fontSize:13,fontFamily:'Inter',outline:'none',transition:'border-color .15s'};
+  const Body=()=>{
+    if(sec==='cuenta') return (
+      <div style={{display:'flex',flexDirection:'column',gap:16}}>
+        <div style={{fontFamily:'Syne',fontSize:16,fontWeight:700,marginBottom:4}}>Información de cuenta</div>
+        {[{l:'Nombre',v:'Cuenta principal'},{l:'Email',v:'admin@adsplus.io'},{l:'Zona horaria',v:'America/Mexico_City'},{l:'Moneda',v:'USD'}].map(f=>(
+          <div key={f.l}><div style={{fontSize:10,fontWeight:700,textTransform:'uppercase',letterSpacing:'.08em',color:'var(--t2)',marginBottom:6}}>{f.l}</div>
+          <input defaultValue={f.v} style={inp} onFocus={e=>e.target.style.borderColor='var(--accent)'} onBlur={e=>e.target.style.borderColor='var(--border)'}/></div>
+        ))}
+        <button className="btn-grad" style={{alignSelf:'flex-start',marginTop:4}}>Guardar cambios</button>
+      </div>
+    );
+    if(sec==='equipo') return (
+      <div style={{display:'flex',flexDirection:'column',gap:16}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+          <div style={{fontFamily:'Syne',fontSize:16,fontWeight:700}}>Miembros del equipo</div>
+          <button style={{display:'flex',alignItems:'center',gap:6,background:'rgba(0,180,216,.1)',border:'1px solid rgba(0,180,216,.2)',borderRadius:8,padding:'6px 12px',color:'var(--accent)',cursor:'pointer',fontSize:12,fontWeight:600,fontFamily:'Inter'}}><Ic n="plus" s={13}/>Invitar</button>
+        </div>
+        {[{n:'Ana García',e:'ana@adsplus.io',r:'Admin',av:'AG',c:'#00B4D8'},{n:'Carlos López',e:'carlos@adsplus.io',r:'Media Buyer',av:'CL',c:'#39D353'},{n:'María Torres',e:'maria@adsplus.io',r:'Viewer',av:'MT',c:'#E3B341'}].map(m=>(
+          <div key={m.e} style={{display:'flex',alignItems:'center',gap:12,padding:'12px 0',borderBottom:'1px solid rgba(30,45,61,.5)'}}>
+            <div style={{width:36,height:36,borderRadius:'50%',background:`${m.c}22`,border:`1px solid ${m.c}44`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:700,color:m.c,flexShrink:0}}>{m.av}</div>
+            <div style={{flex:1}}><div style={{fontSize:13,fontWeight:600,color:'var(--t1)'}}>{m.n}</div><div style={{fontSize:11,color:'var(--t2)'}}>{m.e}</div></div>
+            <select defaultValue={m.r} style={{background:'var(--bg-main)',border:'1px solid var(--border)',borderRadius:6,padding:'5px 10px',color:'var(--t2)',fontSize:12,fontFamily:'Inter',outline:'none',cursor:'pointer'}}>
+              {['Admin','Media Buyer','Viewer'].map(r=><option key={r}>{r}</option>)}
+            </select>
+          </div>
+        ))}
+      </div>
+    );
+    if(sec==='integraciones') return (
+      <div style={{display:'flex',flexDirection:'column',gap:14}}>
+        <div style={{fontFamily:'Syne',fontSize:16,fontWeight:700,marginBottom:4}}>Integraciones</div>
+        {[{id:'meta',n:'Meta Ads',d:'Facebook e Instagram Ads Manager',c:'#1877F2'},{id:'google',n:'Google Ads',d:'Search, Display, YouTube',c:'#EA4335'},{id:'tiktok',n:'TikTok Ads',d:'TikTok for Business Manager',c:'#FF0050'}].map(it=>(
+          <div key={it.id} style={{display:'flex',alignItems:'center',gap:14,padding:16,background:'rgba(0,0,0,.2)',border:'1px solid var(--border)',borderRadius:10}}>
+            <div style={{width:42,height:42,borderRadius:10,background:`${it.c}20`,border:`1px solid ${it.c}30`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}><div style={{width:18,height:18,borderRadius:4,background:it.c}}></div></div>
+            <div style={{flex:1}}><div style={{fontSize:14,fontWeight:600,color:'var(--t1)'}}>{it.n}</div><div style={{fontSize:12,color:'var(--t2)'}}>{it.d}</div></div>
+            <div style={{display:'flex',alignItems:'center',gap:10}}>
+              <span style={{fontSize:11,fontWeight:600,color:intg[it.id]?'var(--ok)':'var(--t2)'}}>{intg[it.id]?'Conectado':'Desconectado'}</span>
+              <Tog on={intg[it.id]} onChange={()=>setIntg(p=>({...p,[it.id]:!p[it.id]}))}/>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+    if(sec==='facturacion') return (
+      <div style={{display:'flex',flexDirection:'column',gap:16}}>
+        <div style={{fontFamily:'Syne',fontSize:16,fontWeight:700,marginBottom:4}}>Facturación</div>
+        <div style={{background:'linear-gradient(135deg,rgba(0,180,216,.08),rgba(0,119,182,.08))',border:'1px solid rgba(0,180,216,.2)',borderRadius:12,padding:20}}>
+          <div style={{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color:'var(--accent)',marginBottom:8}}>Plan Pro</div>
+          <div style={{fontFamily:'JetBrains Mono',fontSize:30,fontWeight:700,color:'var(--t1)',lineHeight:1}}>$99<span style={{fontSize:14,color:'var(--t2)',fontWeight:400}}>/mes</span></div>
+          <div style={{fontSize:12,color:'var(--t2)',marginTop:6}}>Próximo cobro: 1 de mayo, 2026</div>
+        </div>
+        <div style={{display:'flex',alignItems:'center',gap:12,padding:13,background:'rgba(0,0,0,.2)',border:'1px solid var(--border)',borderRadius:9}}>
+          <Ic n="creditCard" s={20} c="var(--accent)"/>
+          <span style={{fontSize:13,color:'var(--t1)',flex:1}}>•••• •••• •••• 4242</span>
+          <span style={{fontSize:11,color:'var(--t2)'}}>Vence 12/27</span>
+        </div>
+      </div>
+    );
+    if(sec==='notificaciones') return (
+      <div style={{display:'flex',flexDirection:'column',gap:4}}>
+        <div style={{fontFamily:'Syne',fontSize:16,fontWeight:700,marginBottom:12}}>Notificaciones</div>
+        {[{id:'email',l:'Alertas por email',d:'Alertas críticas por correo'},{id:'slack',l:'Integración Slack',d:'Notificaciones en canal Slack'},{id:'budget',l:'Alertas de presupuesto',d:'Cuando supere el 90% del presupuesto'},{id:'results',l:'Logros de resultados',d:'Al alcanzar hitos de conversiones'},{id:'weekly',l:'Reporte semanal',d:'Resumen cada lunes'}].map(n=>(
+          <div key={n.id} style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:16,padding:'14px 0',borderBottom:'1px solid rgba(30,45,61,.5)'}}>
+            <div><div style={{fontSize:13,fontWeight:600,color:'var(--t1)',marginBottom:2}}>{n.l}</div><div style={{fontSize:11,color:'var(--t2)'}}>{n.d}</div></div>
+            <Tog on={nots[n.id]} onChange={()=>setNots(p=>({...p,[n.id]:!p[n.id]}))}/>
+          </div>
+        ))}
+      </div>
+    );
+    return null;
+  };
+  return (
+    <div style={{padding:24,overflowY:'auto',height:'100%',display:'flex',flexDirection:'column',gap:20}}>
+      <h1 className="fade-up" style={{fontFamily:'Syne',fontSize:28,fontWeight:800,color:'var(--t1)'}}>Configuración</h1>
+      <div style={{display:'grid',gridTemplateColumns:'220px 1fr',gap:18}}>
+        <div style={{display:'flex',flexDirection:'column',gap:2}}>
+          {secs.map(s=>(
+            <button key={s.id} onClick={()=>setSec(s.id)} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 12px',borderRadius:8,border:'none',cursor:'pointer',textAlign:'left',background:sec===s.id?'rgba(0,180,216,.1)':'transparent',color:sec===s.id?'var(--accent)':'var(--t2)',fontSize:13,fontWeight:sec===s.id?600:400,fontFamily:'Inter',transition:'all .15s',borderLeft:sec===s.id?'2px solid var(--accent)':'2px solid transparent'}}>
+              <Ic n={s.i} s={15} c={sec===s.id?'var(--accent)':'var(--t2)'}/>{s.l}
+            </button>
+          ))}
+        </div>
+        <div className="card" style={{padding:24}}><Body/></div>
+      </div>
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════
+//  MODAL
+// ═══════════════════════════════════════════════
+const Modal = ({ open, onClose, onDone }) => {
+  const [step,setStep]=React.useState(0);
+  const [form,setForm]=React.useState({name:'',obj:'',budget:'',start:'',end:'',audience:'',platform:''});
+  const [err,setErr]=React.useState(false);
+  if(!open) return null;
+  const steps=['Nombre y objetivo','Presupuesto y fechas','Públicos y plataforma'];
+  const set=(k,v)=>{setErr(false);setForm(f=>({...f,[k]:v}));};
+  const canNext=step===0?(form.name.trim()&&form.obj):step===1?(form.budget&&Number(form.budget)>0&&form.start&&form.end):true;
+  const tryNext=()=>{if(canNext){setErr(false);setStep(s=>s+1);}else setErr(true);};
+  const inp={width:'100%',background:'#0D1117',border:'1px solid #1E2D3D',borderRadius:8,padding:'9px 13px',color:'#F0F6FC',fontSize:13,fontFamily:'Inter',outline:'none',transition:'border-color .15s'};
+  const lbl={fontSize:10,fontWeight:700,textTransform:'uppercase',letterSpacing:'.08em',color:'#8B949E',marginBottom:6,display:'block'};
+  const done=()=>{onDone();onClose();setTimeout(()=>{setStep(0);setForm({name:'',obj:'',budget:'',start:'',end:'',audience:'',platform:''}); },300);};
+  return (
+    <div onClick={e=>{if(e.target===e.currentTarget)onClose();}} style={{position:'fixed',inset:0,zIndex:1000,background:'rgba(0,0,0,.72)',backdropFilter:'blur(10px)',display:'flex',alignItems:'center',justifyContent:'center',padding:16,animation:'fadeUp .2s ease-out'}}>
+      <div style={{background:'#111827',border:'1px solid rgba(0,180,216,.15)',borderRadius:16,padding:28,width:'100%',maxWidth:480,position:'relative',boxShadow:'0 24px 64px rgba(0,0,0,.7)',animation:'fadeUp .25s ease-out'}}>
+        <div style={{position:'absolute',top:0,left:0,right:0,height:1,background:'linear-gradient(90deg,transparent,#00B4D8,transparent)',borderRadius:'16px 16px 0 0'}}/>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:22}}>
+          <div><div style={{fontFamily:'Syne',fontSize:20,fontWeight:800,color:'var(--t1)',marginBottom:3}}>Nueva Campaña</div><div style={{fontSize:12,color:'var(--t2)'}}>Paso {step+1} de {steps.length} — {steps[step]}</div></div>
+          <button onClick={onClose} style={{width:32,height:32,borderRadius:8,background:'rgba(0,0,0,.3)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',color:'var(--t2)'}}><Ic n="x" s={16}/></button>
+        </div>
+        <div style={{display:'flex',gap:8,marginBottom:24}}>
+          {steps.map((s,i)=><div key={i} style={{flex:1}}><div style={{height:2.5,borderRadius:2,background:i<=step?'var(--accent)':'var(--border)',transition:'background .3s',marginBottom:6}}/><div style={{fontSize:10,color:i===step?'var(--accent)':'var(--t2)',fontWeight:i===step?600:400}}>{s}</div></div>)}
+        </div>
+        <div style={{marginBottom:24}}>
+          {step===0 && (
+            <div style={{display:'flex',flexDirection:'column',gap:16}}>
+              <div><span style={lbl}>Nombre de campaña <span style={{color:'var(--err)'}}>*</span></span><input value={form.name} onChange={e=>set('name',e.target.value)} placeholder="Ej: Black Friday Q3" style={{...inp,borderColor:err&&!form.name.trim()?'rgba(248,81,73,.6)':'#1E2D3D'}} onFocus={e=>e.target.style.borderColor='#00B4D8'} onBlur={e=>e.target.style.borderColor=err&&!form.name.trim()?'rgba(248,81,73,.6)':'#1E2D3D'}/></div>
+              <div><span style={lbl}>Objetivo principal</span>
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
+                  {['Conversiones','Tráfico','Alcance','Leads','Engagement','Ventas'].map(o=>(
+                    <div key={o} onClick={()=>set('obj',o)} style={{padding:'10px 14px',borderRadius:8,cursor:'pointer',fontSize:13,fontWeight:500,border:`1px solid ${form.obj===o?'var(--accent)':'#1E2D3D'}`,background:form.obj===o?'rgba(0,180,216,.1)':'rgba(0,0,0,.2)',color:form.obj===o?'var(--accent)':'#8B949E',transition:'all .15s'}}>{o}</div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+          {step===1 && (
+            <div style={{display:'flex',flexDirection:'column',gap:16}}>
+              <div><span style={lbl}>Presupuesto total (USD)</span><input type="number" value={form.budget} onChange={e=>set('budget',e.target.value)} placeholder="Ej: 10000" style={inp} onFocus={e=>e.target.style.borderColor='#00B4D8'} onBlur={e=>e.target.style.borderColor='#1E2D3D'}/></div>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+                <div><span style={lbl}>Fecha inicio</span><input type="date" value={form.start} onChange={e=>set('start',e.target.value)} style={inp}/></div>
+                <div><span style={lbl}>Fecha fin</span><input type="date" value={form.end} onChange={e=>set('end',e.target.value)} style={inp}/></div>
+              </div>
+              {form.budget && <div style={{background:'rgba(0,180,216,.06)',border:'1px solid rgba(0,180,216,.15)',borderRadius:8,padding:'10px 14px',fontSize:12}}><span style={{color:'var(--accent)',fontWeight:700,fontFamily:'JetBrains Mono'}}>${(Number(form.budget)/30).toFixed(2)}</span><span style={{color:'var(--t2)'}}> · presupuesto diario estimado</span></div>}
+            </div>
+          )}
+          {step===2 && (
+            <div style={{display:'flex',flexDirection:'column',gap:16}}>
+              <div><span style={lbl}>Público objetivo</span>
+                <select value={form.audience} onChange={e=>set('audience',e.target.value)} style={{...inp,cursor:'pointer'}}>
+                  <option value="">Seleccionar público...</option>
+                  <option>Remarketing — Visitantes web</option><option>Lookalike — 1%</option><option>Intereses — Tecnología</option><option>Compradores frecuentes</option>
+                </select>
+              </div>
+              <div><span style={lbl}>Plataforma</span>
+                <div style={{display:'flex',gap:8}}>
+                  {['Meta','Google','TikTok'].map(p=><div key={p} onClick={()=>set('platform',p)} style={{flex:1,padding:'12px 0',borderRadius:8,cursor:'pointer',textAlign:'center',border:`1px solid ${form.platform===p?'var(--accent)':'#1E2D3D'}`,background:form.platform===p?'rgba(0,180,216,.1)':'rgba(0,0,0,.2)',color:form.platform===p?'var(--accent)':'#8B949E',fontSize:13,fontWeight:600,transition:'all .15s'}}>{p}</div>)}
+                </div>
+              </div>
+              <div style={{background:'rgba(0,0,0,.25)',border:'1px solid #1E2D3D',borderRadius:10,padding:14,display:'flex',flexDirection:'column',gap:8}}>
+                <div style={{fontSize:10,fontWeight:700,textTransform:'uppercase',letterSpacing:'.08em',color:'#8B949E',marginBottom:2}}>Resumen</div>
+                {[{l:'Nombre',v:form.name||'—'},{l:'Objetivo',v:form.obj||'—'},{l:'Presupuesto',v:form.budget?`$${Number(form.budget).toLocaleString()}`:'—'},{l:'Plataforma',v:form.platform||'—'}].map(r=>(
+                  <div key={r.l} style={{display:'flex',justifyContent:'space-between',fontSize:12}}><span style={{color:'#8B949E'}}>{r.l}</span><span style={{color:'#F0F6FC',fontWeight:600}}>{r.v}</span></div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+        {err && <div style={{marginBottom:14,padding:'9px 13px',background:'rgba(248,81,73,.08)',border:'1px solid rgba(248,81,73,.25)',borderRadius:8,fontSize:12,color:'var(--err)',display:'flex',alignItems:'center',gap:8,animation:'fadeUp .15s ease-out'}}>
+          <Ic n="x" s={13} c="var(--err)"/>
+          {step===0?'Ingresa un nombre y selecciona un objetivo':step===1?'Completa el presupuesto y las fechas':'Completa los campos requeridos'}
+        </div>}
+        <div style={{display:'flex',justifyContent:'space-between',gap:10}}>
+          <button onClick={onClose} style={{padding:'8px 18px',borderRadius:8,border:'1px solid var(--border)',background:'transparent',color:'var(--t2)',cursor:'pointer',fontSize:13,fontFamily:'Inter'}}>Cancelar</button>
+          <div style={{display:'flex',gap:8}}>
+            {step>0 && <button onClick={()=>{setErr(false);setStep(s=>s-1);}} style={{padding:'8px 18px',borderRadius:8,border:'1px solid var(--border)',background:'transparent',color:'var(--t1)',cursor:'pointer',fontSize:13,fontFamily:'Inter'}}>← Anterior</button>}
+            {step<steps.length-1
+              ? <button className="btn-grad" onClick={tryNext} style={{opacity:canNext?1:.65,transition:'opacity .15s'}}>Siguiente →</button>
+              : <button onClick={done} style={{padding:'8px 20px',borderRadius:8,border:'none',background:'linear-gradient(135deg,#39D353,#1a7a28)',color:'white',cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:'Inter',display:'flex',alignItems:'center',gap:6}}><Ic n="check" s={14} c="white"/>Crear Campaña</button>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════
+//  APP
+// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════════
+//  SEARCH OVERLAY
+// ═══════════════════════════════════════════════
+const SearchOverlay = ({ onClose }) => {
+  const [q,setQ]=React.useState('');
+  const res=q.length>1?CAMPAIGNS.filter(c=>c.name.toLowerCase().includes(q.toLowerCase())||c.obj.toLowerCase().includes(q.toLowerCase())):[];
+  React.useEffect(()=>{const el=document.getElementById('srch-inp');if(el)el.focus();},[]);
+  return (
+    <div onClick={e=>{if(e.target===e.currentTarget)onClose();}} style={{position:'fixed',inset:0,zIndex:2000,background:'rgba(0,0,0,.78)',backdropFilter:'blur(10px)',display:'flex',flexDirection:'column',alignItems:'center',padding:'80px 20px 0',animation:'fadeUp .15s ease-out'}}>
+      <div className="srch-card" style={{width:'100%',maxWidth:560,background:'#111827',borderRadius:14,border:'1px solid rgba(0,180,216,.22)',boxShadow:'0 28px 72px rgba(0,0,0,.85)',overflow:'hidden'}}>
+        <div style={{position:'absolute',top:0,left:0,right:0,height:1,background:'linear-gradient(90deg,transparent,#00B4D8,transparent)'}}/>
+        <div style={{display:'flex',alignItems:'center',gap:12,padding:'14px 18px',borderBottom:'1px solid var(--border)'}}>
+          <Ic n="search" s={18} c="var(--t2)"/>
+          <input id="srch-inp" value={q} onChange={e=>setQ(e.target.value)} onKeyDown={e=>e.key==='Escape'&&onClose()} placeholder="Buscar campañas..." style={{flex:1,background:'transparent',border:'none',color:'var(--t1)',fontSize:16,outline:'none',fontFamily:'Inter'}}/>
+          {q && <button onClick={()=>setQ('')} style={{background:'rgba(30,45,61,.7)',border:'none',borderRadius:5,padding:'2px 8px',fontSize:11,color:'var(--t2)',cursor:'pointer',fontFamily:'JetBrains Mono'}}>✕</button>}
+          <span onClick={onClose} style={{fontSize:11,color:'var(--t2)',background:'rgba(30,45,61,.8)',borderRadius:5,padding:'2px 7px',fontFamily:'JetBrains Mono',cursor:'pointer',userSelect:'none'}}>ESC</span>
+        </div>
+        <div style={{maxHeight:340,overflowY:'auto'}}>
+          {q.length>1 && res.length>0 && res.map(c=>(
+            <div key={c.id} style={{display:'flex',alignItems:'center',gap:12,padding:'11px 18px',cursor:'pointer',transition:'background .1s'}}
+              onMouseEnter={e=>e.currentTarget.style.background='rgba(0,180,216,.07)'}
+              onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+              <div style={{width:34,height:34,borderRadius:8,background:'rgba(0,180,216,.08)',border:'1px solid rgba(0,180,216,.14)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}><Ic n="campaigns" s={15} c="var(--accent)"/></div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:13,fontWeight:600,color:'var(--t1)',marginBottom:1}}>{c.name}</div>
+                <div style={{fontSize:11,color:'var(--t2)'}}>{c.obj} · {c.platform} · <span style={{fontFamily:'JetBrains Mono'}}>${c.investment.toLocaleString()}</span></div>
+              </div>
+              <Badge status={c.status}/>
+              <Ic n="chevR" s={13} c="rgba(139,148,158,.4)"/>
+            </div>
+          ))}
+          {q.length>1 && res.length===0 && (
+            <div style={{padding:'36px 18px',textAlign:'center'}}>
+              <div style={{fontSize:13,color:'var(--t2)',marginBottom:4}}>Sin resultados para <span style={{color:'var(--t1)',fontWeight:600}}>"{q}"</span></div>
+              <div style={{fontSize:11,color:'var(--t2)',opacity:.6}}>Intenta con un nombre de campaña diferente</div>
+            </div>
+          )}
+          {q.length<=1 && (
+            <div style={{padding:'16px 18px'}}>
+              <div style={{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'.08em',color:'var(--t2)',marginBottom:10}}>Campañas recientes</div>
+              {CAMPAIGNS.slice(0,4).map(c=>(
+                <div key={c.id} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 0',cursor:'pointer',borderRadius:6}}
+                  onMouseEnter={e=>e.currentTarget.style.background='rgba(0,180,216,.05)'}
+                  onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+                  <Ic n="campaigns" s={13} c="var(--t2)"/>
+                  <span style={{fontSize:13,color:'var(--t1)',flex:1}}>{c.name}</span>
+                  <Badge status={c.status}/>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        <div style={{padding:'10px 18px',borderTop:'1px solid var(--border)',display:'flex',gap:16,fontSize:11,color:'var(--t2)'}}>
+          <span><span style={{fontFamily:'JetBrains Mono',background:'rgba(30,45,61,.8)',borderRadius:4,padding:'1px 5px',marginRight:5}}>↑↓</span>Navegar</span>
+          <span><span style={{fontFamily:'JetBrains Mono',background:'rgba(30,45,61,.8)',borderRadius:4,padding:'1px 5px',marginRight:5}}>↵</span>Abrir</span>
+          <span><span style={{fontFamily:'JetBrains Mono',background:'rgba(30,45,61,.8)',borderRadius:4,padding:'1px 5px',marginRight:5}}>ESC</span>Cerrar</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const Toast = ({ msg, onDismiss }) => {
+  React.useEffect(()=>{ const t=setTimeout(onDismiss,4000); return()=>clearTimeout(t); },[]);
+  return <div className="toast"><div style={{width:7,height:7,borderRadius:'50%',background:'var(--ok)',flexShrink:0,boxShadow:'0 0 6px rgba(57,211,83,.6)'}}></div>{msg}</div>;
+};
+
+const Placeholder = ({ title, icon }) => (
+  <div className="fade-up" style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',height:'100%',gap:16}}>
+    <div style={{width:72,height:72,borderRadius:18,background:'rgba(0,180,216,.06)',border:'1px solid rgba(0,180,216,.12)',display:'flex',alignItems:'center',justifyContent:'center'}}><Ic n={icon} s={32} c="rgba(0,180,216,.35)"/></div>
+    <div style={{fontFamily:'Syne',fontSize:20,fontWeight:700,color:'var(--t2)'}}>{title}</div>
+    <div style={{fontSize:13,color:'var(--t2)',opacity:.5}}>Próximamente disponible</div>
+  </div>
+);
+
+const App = () => {
+  const [view,setView]=React.useState('dashboard');
+  const [col,setCol]  =React.useState(false);
+  const [modal,setModal]=React.useState(false);
+  const [toast,setToast]=React.useState(null);
+  const [srch,setSrch]=React.useState(false);
+  const showToast=msg=>{setToast(msg);setTimeout(()=>setToast(null),4500);};
+  React.useEffect(()=>{
+    const fn=e=>{
+      if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();setSrch(s=>!s);}
+      if(e.key==='Escape'&&srch)setSrch(false);
+    };
+    document.addEventListener('keydown',fn);
+    return()=>document.removeEventListener('keydown',fn);
+  },[srch]);
+  const views={
+    dashboard: <DashView onNew={()=>setModal(true)}/>,
+    campaigns: <CampsView onNew={()=>setModal(true)}/>,
+    adsets:    <Placeholder title="Conjuntos de Anuncios" icon="adsets"/>,
+    ads:       <Placeholder title="Anuncios" icon="ads"/>,
+    reports:   <RptsView/>,
+    settings:  <SetView/>,
+  };
+  return (
+    <div style={{display:'flex',height:'100vh',overflow:'hidden',background:'var(--bg-main)'}}>
+      <Sidebar view={view} setView={setView} col={col} setCol={setCol}/>
+      <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden',minWidth:0}}>
+        <TopBar view={view} onSearch={()=>setSrch(true)}/>
+        <div style={{flex:1,overflow:'hidden'}}>{views[view]||views.dashboard}</div>
+      </div>
+      <Modal open={modal} onClose={()=>setModal(false)} onDone={()=>showToast('¡Campaña creada exitosamente!')}/>
+      {toast && <Toast msg={toast} onDismiss={()=>setToast(null)}/>}
+      {srch && <SearchOverlay onClose={()=>setSrch(false)}/>}
+    </div>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
